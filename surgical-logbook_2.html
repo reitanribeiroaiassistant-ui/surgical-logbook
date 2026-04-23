@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Surgical Logbook — Residency & Fellowship</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&family=Figtree:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f7f6f2;
+    --surface: #ffffff;
+    --surface2: #f0efe9;
+    --border: #e2e0d8;
+    --border2: #ccc9be;
+    --accent: #1a6b4a;
+    --accent2: #22895f;
+    --accent-dim: rgba(26,107,74,0.09);
+    --accent-light: #e8f5ee;
+    --prec: #7c3aed;
+    --prec-dim: rgba(124,58,237,0.08);
+    --prec-light: #f3f0ff;
+    --red: #dc2626;
+    --red-dim: rgba(220,38,38,0.08);
+    --green: #16a34a;
+    --amber: #b45309;
+    --text: #1c1917;
+    --text2: #6b6860;
+    --text3: #a8a5a0;
+    --shadow: 0 1px 3px rgba(0,0,0,0.06),0 4px 16px rgba(0,0,0,0.04);
+    --shadow-lg: 0 8px 40px rgba(0,0,0,0.13);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Figtree',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+  /* ── SCREENS ── */
+  .screen{display:none;position:relative;z-index:1}
+  .screen.active{display:block}
+  #screen-loading.active{display:flex;align-items:center;justify-content:center;min-height:100vh;flex-direction:column;gap:14px}
+  .spinner{width:34px;height:34px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .75s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .loading-text{font-size:14px;color:var(--text2)}
+
+  /* ── AUTH ── */
+  .auth-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+  .auth-split{display:flex;width:100%;max-width:880px;background:var(--surface);border-radius:20px;border:1px solid var(--border);box-shadow:var(--shadow-lg);overflow:hidden;animation:fadeUp .45s ease}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+  .auth-left{flex:1;background:var(--accent);padding:52px 44px;display:flex;flex-direction:column;justify-content:space-between;min-height:500px}
+  .auth-left-logo{font-family:'Instrument Serif',serif;font-size:26px;color:#fff;letter-spacing:-.02em}
+  .auth-left-logo em{font-style:italic;opacity:.7}
+  .auth-left-tag{color:rgba(255,255,255,.6);font-size:13px;margin-top:5px}
+  .auth-left-body{color:rgba(255,255,255,.85);font-size:15px;line-height:1.75}
+  .auth-left-body strong{color:#fff}
+  .auth-left-foot{color:rgba(255,255,255,.35);font-size:12px}
+  .auth-right{flex:1;padding:48px 44px;display:flex;flex-direction:column;justify-content:center}
+  .auth-right-title{font-family:'Instrument Serif',serif;font-size:28px;margin-bottom:6px;letter-spacing:-.02em}
+  .auth-right-sub{font-size:14px;color:var(--text2);margin-bottom:30px}
+
+  .role-selector{display:flex;gap:8px;margin-bottom:22px}
+  .role-opt{flex:1;padding:12px 8px;border-radius:10px;border:1.5px solid var(--border);background:var(--bg);cursor:pointer;text-align:center;transition:all .18s}
+  .role-opt:hover{border-color:var(--border2)}
+  .role-opt.sel-res{border-color:var(--accent);background:var(--accent-light)}
+  .role-opt.sel-prec{border-color:var(--prec);background:var(--prec-light)}
+  .role-opt-icon{font-size:20px;margin-bottom:4px}
+  .role-opt-label{font-size:13px;font-weight:600}
+  .role-opt-sub{font-size:11px;color:var(--text2);margin-top:2px}
+
+  .tab-bar{display:flex;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:3px;margin-bottom:20px}
+  .tab-btn{flex:1;padding:8px;border:none;background:none;color:var(--text2);font-size:14px;font-family:'Figtree',sans-serif;font-weight:500;border-radius:6px;cursor:pointer;transition:all .15s}
+  .tab-btn.active{background:var(--surface);color:var(--text);box-shadow:var(--shadow)}
+
+  label{display:block;font-size:11px;font-weight:700;color:var(--text2);margin-bottom:6px;letter-spacing:.05em;text-transform:uppercase}
+  input,select,textarea{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:8px;color:var(--text);font-family:'Figtree',sans-serif;font-size:14px;padding:10px 13px;transition:border .15s,box-shadow .15s;outline:none}
+  input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-dim)}
+  select option{background:var(--surface)}
+  .field{margin-bottom:15px}
+
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 20px;border-radius:8px;border:none;cursor:pointer;font-family:'Figtree',sans-serif;font-size:14px;font-weight:600;transition:all .15s}
+  .btn-primary{background:var(--accent);color:#fff;width:100%}
+  .btn-primary:hover{background:var(--accent2);transform:translateY(-1px);box-shadow:0 4px 16px rgba(26,107,74,.28)}
+  .btn-primary:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none}
+  .btn-prec{background:var(--prec);color:#fff}
+  .btn-prec:hover{opacity:.9;transform:translateY(-1px)}
+  .btn-ghost{background:transparent;color:var(--text2);border:1.5px solid var(--border)}
+  .btn-ghost:hover{background:var(--surface2);color:var(--text)}
+  .btn-danger{background:var(--red-dim);color:var(--red);border:1.5px solid rgba(220,38,38,.18)}
+  .btn-danger:hover{background:rgba(220,38,38,.14)}
+  .btn-sm{padding:7px 14px;font-size:13px}
+  .err{color:var(--red);font-size:13px;margin-top:-8px;margin-bottom:14px;padding:9px 12px;background:var(--red-dim);border-radius:6px;border:1px solid rgba(220,38,38,.14)}
+
+  /* ── TOPBAR ── */
+  .topbar{position:sticky;top:0;z-index:100;background:rgba(247,246,242,.93);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 40px;height:60px}
+  .topbar-logo{font-family:'Instrument Serif',serif;font-size:20px;letter-spacing:-.02em;color:var(--text)}
+  .topbar-logo em{font-style:italic;color:var(--accent)}
+  .prec-badge{font-family:'Figtree',sans-serif;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;background:var(--prec-light);color:var(--prec);border:1px solid rgba(124,58,237,.2);padding:3px 8px;border-radius:50px;margin-left:10px;vertical-align:middle}
+  .topbar-right{display:flex;align-items:center;gap:12px}
+  .user-chip{display:flex;align-items:center;gap:9px;background:var(--surface);border:1px solid var(--border);border-radius:50px;padding:5px 14px 5px 6px;box-shadow:var(--shadow)}
+  .user-avatar{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700}
+  .av-res{background:var(--accent-light);color:var(--accent)}
+  .av-prec{background:var(--prec-light);color:var(--prec)}
+  .user-name{font-size:13px;font-weight:600}
+
+  /* ── MAIN ── */
+  .main{max-width:1140px;margin:0 auto;padding:38px 40px}
+  .page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:30px;flex-wrap:wrap;gap:14px}
+  .page-title{font-family:'Instrument Serif',serif;font-size:34px;letter-spacing:-.02em}
+  .page-subtitle{font-size:14px;color:var(--text2);margin-top:3px}
+
+  /* ── STATS ── */
+  .stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:13px;margin-bottom:30px}
+  .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:17px 19px;box-shadow:var(--shadow)}
+  .stat-card.ac{border-left:3px solid var(--accent)}
+  .stat-card.pc{border-left:3px solid var(--prec)}
+  .stat-label{font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
+  .stat-value{font-family:'JetBrains Mono',monospace;font-size:30px;font-weight:500;color:var(--text)}
+  .stat-value.green{color:var(--accent)}
+  .stat-value.purple{color:var(--prec)}
+
+  /* ── CASE LIST ── */
+  .case-list{display:flex;flex-direction:column;gap:10px}
+  .case-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:17px 21px;cursor:pointer;transition:all .16s;box-shadow:var(--shadow)}
+  .case-card:hover{border-color:var(--accent);box-shadow:0 4px 20px rgba(26,107,74,.09);transform:translateY(-1px)}
+  .cc-header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+  .cc-tag{font-family:'JetBrains Mono',monospace;font-size:10px;background:var(--accent-light);color:var(--accent);border:1px solid rgba(26,107,74,.18);padding:3px 8px;border-radius:4px;font-weight:500}
+  .cc-date{font-size:12px;color:var(--text3);font-family:'JetBrains Mono',monospace;white-space:nowrap}
+  .cc-title{font-size:16px;font-weight:600;margin:7px 0 3px}
+  .cc-meta{font-size:13px;color:var(--text2)}
+  .cc-procs{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+  .proc-chip{font-size:11px;background:var(--surface2);color:var(--text2);border:1px solid var(--border);padding:3px 9px;border-radius:50px;font-weight:500}
+  .proc-chip.p{background:rgba(22,163,74,.08);color:var(--green);border-color:rgba(22,163,74,.2)}
+  .proc-chip.a{background:rgba(180,83,9,.08);color:var(--amber);border-color:rgba(180,83,9,.2)}
+
+  /* ── RESIDENT GRID ── */
+  .resident-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(275px,1fr));gap:13px}
+  .resident-card{background:var(--surface);border:1px solid var(--border);border-radius:13px;padding:19px 21px;cursor:pointer;transition:all .16s;box-shadow:var(--shadow)}
+  .resident-card:hover{border-color:var(--prec);box-shadow:0 4px 24px rgba(124,58,237,.1);transform:translateY(-2px)}
+  .rc-header{display:flex;align-items:center;gap:12px;margin-bottom:13px}
+  .rc-avatar{width:42px;height:42px;border-radius:10px;background:var(--prec-light);color:var(--prec);display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:700;flex-shrink:0;border:1px solid rgba(124,58,237,.2)}
+  .rc-name{font-size:15px;font-weight:600;margin-bottom:2px}
+  .rc-meta{font-size:12px;color:var(--text2)}
+  .rc-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+  .rc-stat{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:8px 5px;text-align:center}
+  .rc-stat-val{font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:500}
+  .rc-stat-lbl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-top:2px}
+
+  /* ── PRECEPTOR DETAIL ── */
+  .back-btn{display:inline-flex;align-items:center;gap:7px;font-size:13px;color:var(--text2);cursor:pointer;margin-bottom:20px;padding:7px 13px;border:1px solid var(--border);border-radius:7px;background:var(--surface);transition:all .14s;font-weight:500}
+  .back-btn:hover{color:var(--text);border-color:var(--border2)}
+  .res-full-header{background:var(--surface);border:1px solid var(--border);border-radius:13px;padding:24px;margin-bottom:24px;display:flex;align-items:center;gap:17px;flex-wrap:wrap;box-shadow:var(--shadow)}
+  .res-full-avatar{width:58px;height:58px;border-radius:13px;background:var(--prec-light);color:var(--prec);display:flex;align-items:center;justify-content:center;font-size:23px;font-weight:700;flex-shrink:0;border:2px solid rgba(124,58,237,.22)}
+  .res-full-name{font-family:'Instrument Serif',serif;font-size:25px;letter-spacing:-.02em}
+  .res-full-sub{font-size:14px;color:var(--text2);margin-top:3px}
+  .res-full-stats{display:flex;gap:22px;margin-left:auto;flex-wrap:wrap}
+  .rfs{text-align:center}
+  .rfs-val{font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:500}
+  .rfs-lbl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-top:2px}
+
+  /* ── TABS ── */
+  .dash-tabs{display:flex;gap:2px;border-bottom:1px solid var(--border);margin-bottom:24px}
+  .dash-tab{padding:10px 18px;font-size:14px;font-weight:500;color:var(--text2);border:none;background:none;cursor:pointer;font-family:'Figtree',sans-serif;border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s}
+  .dash-tab.active{color:var(--prec);border-bottom-color:var(--prec)}
+  .dash-tab-panel{display:none}
+  .dash-tab-panel.active{display:block;animation:fadeUp .2s ease}
+
+  /* ── PROC ANALYSIS ── */
+  .pa-list{display:flex;flex-direction:column;gap:10px}
+  .pa-row{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 17px;box-shadow:var(--shadow)}
+  .pa-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:11px}
+  .pa-name{font-size:14px;font-weight:600}
+  .pa-total{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--text2)}
+  .pa-bars{display:flex;flex-direction:column;gap:6px}
+  .pa-bar-row{display:flex;align-items:center;gap:10px}
+  .pa-bar-lbl{font-size:11px;color:var(--text2);width:76px;flex-shrink:0;font-weight:500}
+  .pa-bar{flex:1;height:7px;background:var(--bg);border-radius:99px;overflow:hidden;border:1px solid var(--border)}
+  .pa-fill{height:100%;border-radius:99px;transition:width .65s cubic-bezier(.4,0,.2,1)}
+  .fill-p{background:var(--green)}
+  .fill-a{background:var(--amber)}
+  .fill-o{background:var(--text3)}
+  .pa-count{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text2);width:22px;text-align:right;flex-shrink:0}
+
+  /* ── FEEDBACK ── */
+  .fb-thread{display:flex;flex-direction:column;gap:10px;margin-bottom:16px;min-height:50px}
+  .fb-bubble{padding:12px 15px;border-radius:10px;font-size:14px;line-height:1.65;background:var(--prec-light);border:1px solid rgba(124,58,237,.14)}
+  .fb-meta{font-size:11px;color:var(--text3);margin-top:5px;font-weight:500}
+  .fb-res{background:var(--accent-light);border-color:rgba(26,107,74,.14)}
+
+  /* ── MODAL ── */
+  .modal-overlay{display:none;position:fixed;inset:0;z-index:200;background:rgba(28,25,23,.42);backdrop-filter:blur(4px);align-items:flex-start;justify-content:center;padding:40px 20px}
+  .modal-overlay.open{display:flex}
+  .modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;width:100%;max-width:640px;box-shadow:var(--shadow-lg);max-height:90vh;overflow-y:auto;animation:fadeUp .22s ease}
+  .modal-header{display:flex;align-items:center;justify-content:space-between;padding:20px 25px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--surface);z-index:1;border-radius:16px 16px 0 0}
+  .modal-title{font-family:'Instrument Serif',serif;font-size:22px}
+  .modal-close{width:29px;height:29px;border-radius:7px;background:var(--bg);border:1px solid var(--border);color:var(--text2);cursor:pointer;font-size:17px;display:flex;align-items:center;justify-content:center;transition:all .14s}
+  .modal-close:hover{color:var(--text)}
+  .modal-body{padding:24px}
+  .modal-footer{display:flex;gap:9px;padding:17px 24px;border-top:1px solid var(--border);justify-content:flex-end}
+
+  /* ── PROC BUILDER ── */
+  .proc-builder{margin-bottom:8px}
+  .proc-row{display:flex;gap:8px;align-items:flex-start;margin-bottom:8px}
+  .proc-row input{flex:2}
+  .proc-row select{flex:1}
+  .proc-row .rm{padding:10px 11px;background:var(--red-dim);color:var(--red);border:1px solid rgba(220,38,38,.18);border-radius:7px;cursor:pointer;font-size:15px;transition:all .14s;flex-shrink:0}
+  .proc-row .rm:hover{background:rgba(220,38,38,.14)}
+  .btn-add-proc{background:var(--accent-dim);color:var(--accent);border:1.5px dashed rgba(26,107,74,.28);border-radius:7px;padding:8px 14px;cursor:pointer;font-size:13px;font-family:'Figtree',sans-serif;font-weight:600;width:100%;transition:all .14s}
+  .btn-add-proc:hover{background:var(--accent-light);border-color:var(--accent)}
+  textarea{resize:vertical;min-height:88px;line-height:1.6}
+
+  .detail-section{margin-bottom:19px}
+  .detail-label{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
+  .detail-value{font-size:15px;color:var(--text);line-height:1.6}
+  .proc-table{width:100%;border-collapse:collapse;margin-top:4px}
+  .proc-table th{text-align:left;font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;padding:7px 11px;border-bottom:1px solid var(--border);font-weight:700}
+  .proc-table td{padding:9px 11px;font-size:14px;border-bottom:1px solid var(--border)}
+  .proc-table tr:last-child td{border-bottom:none}
+  .role-badge{display:inline-block;padding:3px 10px;border-radius:50px;font-size:12px;font-weight:600}
+  .role-p{background:rgba(22,163,74,.1);color:var(--green);border:1px solid rgba(22,163,74,.2)}
+  .role-a{background:rgba(180,83,9,.1);color:var(--amber);border:1px solid rgba(180,83,9,.2)}
+  .role-o{background:var(--surface2);color:var(--text2);border:1px solid var(--border)}
+
+  .toolbar{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap}
+  .toolbar input{flex:1;min-width:180px}
+  .toolbar select{min-width:145px}
+  .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:15px;flex-wrap:wrap;gap:9px}
+  .section-title{font-size:12px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em}
+  .divider{border:none;border-top:1px solid var(--border);margin:20px 0}
+
+  .empty{text-align:center;padding:55px 20px;background:var(--surface);border:1.5px dashed var(--border);border-radius:12px}
+  .empty-icon{font-size:38px;margin-bottom:11px;opacity:.38}
+  .empty-text{font-size:16px;color:var(--text2);margin-bottom:5px;font-weight:600}
+  .empty-sub{font-size:13px;color:var(--text3)}
+
+  /* ── SAVING BAR ── */
+  .saving-bar{position:fixed;top:0;left:0;right:0;z-index:300;height:3px;background:var(--accent);transform:scaleX(0);transform-origin:left;transition:transform .35s ease}
+  .saving-bar.on{transform:scaleX(1)}
+
+  /* ── TOAST ── */
+  .toast{position:fixed;bottom:24px;right:24px;z-index:500;background:var(--text);color:var(--bg);border-radius:8px;padding:11px 17px;font-size:13px;font-weight:500;box-shadow:var(--shadow-lg);transform:translateY(14px);opacity:0;transition:all .22s;pointer-events:none}
+  .toast.show{transform:translateY(0);opacity:1}
+  .toast.err{background:var(--red);color:#fff}
+
+  /* ── NOT CONFIGURED WARNING ── */
+  .config-warn{background:#fffbeb;border:2px solid #f59e0b;border-radius:10px;padding:14px 18px;margin-bottom:24px;font-size:13px;color:#92400e;display:none}
+  .config-warn.show{display:block}
+  .config-warn strong{color:#78350f}
+
+  @media(max-width:700px){
+    .auth-split{flex-direction:column}
+    .auth-left{min-height:auto;padding:30px 26px}
+    .auth-right{padding:30px 26px}
+    .main{padding:22px 18px}
+    .topbar{padding:0 18px}
+    .modal-body{padding:17px}
+    .modal-footer{padding:13px 17px}
+    .proc-row{flex-direction:column}
+    .resident-grid{grid-template-columns:1fr}
+    .res-full-stats{margin-left:0}
+  }
+</style>
+</head>
+<body>
+<div class="saving-bar" id="saving-bar"></div>
+
+<!-- ══════════ LOADING ══════════ -->
+<div id="screen-loading" class="screen active">
+  <div class="spinner"></div>
+  <div class="loading-text" id="loading-text">Loading…</div>
+</div>
+
+<!-- ══════════ AUTH ══════════ -->
+<div id="screen-auth" class="screen">
+  <div class="auth-wrap">
+    <div class="auth-split">
+      <div class="auth-left">
+        <div>
+          <div class="auth-left-logo">Surgical <em>LogBook</em></div>
+          <div class="auth-left-tag">Residency &amp; Fellowship · Canada</div>
+        </div>
+        <div class="auth-left-body">
+          <strong>Track every case. Build your portfolio.</strong><br><br>
+          Log the procedures you perform, your role at every step, your attending surgeon, and your reflections — all in one place, accessible from any computer.
+        </div>
+        <div class="auth-left-foot">Powered by Google Sheets · Cross-device access</div>
+      </div>
+      <div class="auth-right">
+        <div class="auth-right-title">Welcome</div>
+        <div class="auth-right-sub">Select your role to continue</div>
+
+        <div id="config-warn" class="config-warn">
+          <strong>⚠️ Setup required:</strong> The Google Apps Script URL has not been configured yet.
+          Open this HTML file in a text editor, find <code>PASTE_YOUR_SCRIPT_URL_HERE</code> near the top of the &lt;script&gt; tag, and replace it with your deployment URL.
+        </div>
+
+        <div class="role-selector">
+          <div class="role-opt sel-res" id="ropt-res" onclick="selectRole('resident')">
+            <div class="role-opt-icon">🩺</div>
+            <div class="role-opt-label">Resident / Fellow</div>
+            <div class="role-opt-sub">Log surgical cases</div>
+          </div>
+          <div class="role-opt" id="ropt-prec" onclick="selectRole('preceptor')">
+            <div class="role-opt-icon">🎓</div>
+            <div class="role-opt-label">Preceptor</div>
+            <div class="role-opt-sub">Review trainees</div>
+          </div>
+        </div>
+
+        <div class="tab-bar">
+          <button class="tab-btn active" id="tb-login" onclick="switchTab('login')">Sign In</button>
+          <button class="tab-btn" id="tb-reg"   onclick="switchTab('register')">Register</button>
+        </div>
+
+        <!-- SIGN IN -->
+        <div id="form-login">
+          <div class="field"><label>Email</label><input type="email" id="login-email" placeholder="your@email.com"></div>
+          <div class="field"><label>Password</label><input type="password" id="login-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
+          <div id="login-err" class="err" style="display:none"></div>
+          <button class="btn btn-primary" id="btn-login" onclick="doLogin()">Sign In as Resident / Fellow</button>
+        </div>
+
+        <!-- REGISTER -->
+        <div id="form-register" style="display:none">
+          <div class="field"><label>Full Name</label><input type="text" id="reg-name" placeholder="Dr. Jane Smith"></div>
+          <div id="fld-license" class="field"><label>College Registration #</label><input type="text" id="reg-license" placeholder="e.g., CPSO 123456"></div>
+          <div id="fld-program" class="field"><label>Program / Specialty</label><input type="text" id="reg-program" placeholder="General Surgery — PGY-3 · University of Toronto"></div>
+          <div id="fld-title"   class="field" style="display:none"><label>Title / Role</label><input type="text" id="reg-title" placeholder="Preceptor, General Surgery · Toronto General"></div>
+          <div class="field"><label>Email</label><input type="email" id="reg-email" placeholder="your@email.com"></div>
+          <div class="field"><label>Password</label><input type="password" id="reg-pass" placeholder="Minimum 6 characters"></div>
+          <div id="reg-err" class="err" style="display:none"></div>
+          <button class="btn btn-primary" id="btn-reg" onclick="doRegister()">Create Resident Account</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ RESIDENT DASHBOARD ══════════ -->
+<div id="screen-res" class="screen">
+  <div class="topbar">
+    <div class="topbar-logo">Surgical <em>LogBook</em></div>
+    <div class="topbar-right">
+      <div class="user-chip">
+        <div class="user-avatar av-res" id="res-avatar">R</div>
+        <span class="user-name" id="res-uname">Resident</span>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="doLogout()">Sign Out</button>
+    </div>
+  </div>
+  <div class="main">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">My Case Log</h1>
+        <p class="page-subtitle" id="res-sub"></p>
+      </div>
+      <button class="btn btn-primary" style="width:auto" onclick="openNewModal()">+ Log a Case</button>
+    </div>
+    <div class="stats-row">
+      <div class="stat-card ac"><div class="stat-label">Total Cases</div><div class="stat-value green" id="s-total">0</div></div>
+      <div class="stat-card"><div class="stat-label">Primary Surgeon</div><div class="stat-value" id="s-primary">0</div></div>
+      <div class="stat-card"><div class="stat-label">Assistant</div><div class="stat-value" id="s-assist">0</div></div>
+      <div class="stat-card"><div class="stat-label">This Month</div><div class="stat-value" id="s-month">0</div></div>
+    </div>
+    <div class="toolbar">
+      <input type="text" id="res-search" placeholder="🔍  Search procedure, preceptor, diagnosis…" oninput="renderCaseList()">
+      <select id="res-filter" onchange="renderCaseList()">
+        <option value="">All Roles</option>
+        <option>Primary Surgeon</option>
+        <option>Assistant</option>
+        <option>Observer</option>
+      </select>
+    </div>
+    <div id="res-case-list" class="case-list"></div>
+    <div id="res-fb-section" style="margin-top:38px;display:none">
+      <div class="section-header"><div class="section-title">💬 Feedback from Preceptors</div></div>
+      <div id="res-fb-list" class="fb-thread"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ PRECEPTOR DASHBOARD ══════════ -->
+<div id="screen-prec" class="screen">
+  <div class="topbar">
+    <div class="topbar-logo">Surgical <em>LogBook</em> <span class="prec-badge">Preceptor</span></div>
+    <div class="topbar-right">
+      <div class="user-chip">
+        <div class="user-avatar av-prec" id="prec-avatar">P</div>
+        <span class="user-name" id="prec-uname">Preceptor</span>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="doLogout()">Sign Out</button>
+    </div>
+  </div>
+  <div class="main">
+    <!-- LIST -->
+    <div id="pv-list">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Preceptor Dashboard</h1>
+          <p class="page-subtitle" id="prec-sub">Monitor your residents and fellows</p>
+        </div>
+      </div>
+      <div class="stats-row">
+        <div class="stat-card pc"><div class="stat-label">Trainees</div><div class="stat-value purple" id="ps-res">—</div></div>
+        <div class="stat-card"><div class="stat-label">Total Cases</div><div class="stat-value purple" id="ps-cases">—</div></div>
+        <div class="stat-card"><div class="stat-label">Cases This Month</div><div class="stat-value purple" id="ps-month">—</div></div>
+        <div class="stat-card"><div class="stat-label">Unique Procedures</div><div class="stat-value purple" id="ps-procs">—</div></div>
+      </div>
+      <div class="section-header">
+        <div class="section-title">Residents &amp; Fellows</div>
+        <input type="text" id="prec-search" placeholder="Search trainee…" style="width:210px" oninput="renderGrid()">
+      </div>
+      <div class="resident-grid" id="resident-grid"></div>
+    </div>
+
+    <!-- DETAIL -->
+    <div id="pv-detail" style="display:none">
+      <div class="back-btn" onclick="backToList()">← Back to list</div>
+      <div class="res-full-header" id="prec-res-header"></div>
+      <div class="dash-tabs">
+        <button class="dash-tab active" onclick="precTab('cases')">📋 Cases</button>
+        <button class="dash-tab" onclick="precTab('procedures')">📊 Procedure Analysis</button>
+        <button class="dash-tab" onclick="precTab('feedback')">💬 Feedback</button>
+      </div>
+      <div id="ptab-cases" class="dash-tab-panel active">
+        <div class="toolbar">
+          <input type="text" id="ps-search" placeholder="🔍 Search case…" oninput="renderPrecCases()">
+          <select id="ps-role" onchange="renderPrecCases()">
+            <option value="">All Roles</option>
+            <option>Primary Surgeon</option><option>Assistant</option><option>Observer</option>
+          </select>
+        </div>
+        <div id="prec-case-list" class="case-list"></div>
+      </div>
+      <div id="ptab-procedures" class="dash-tab-panel"><div id="proc-analysis"></div></div>
+      <div id="ptab-feedback" class="dash-tab-panel">
+        <div id="feedback-thread" class="fb-thread"></div>
+        <div style="display:flex;flex-direction:column;gap:9px;margin-top:8px">
+          <textarea id="feedback-text" placeholder="Write feedback for this trainee…" style="min-height:78px"></textarea>
+          <div style="text-align:right">
+            <button class="btn btn-prec btn-sm" onclick="sendFeedback()">Send Feedback</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Log / Edit Case -->
+<div class="modal-overlay" id="modal-case">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="modal-case-title">Log a Case</span>
+      <button class="modal-close" onclick="cm('modal-case')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="field"><label>Date of Surgery</label><input type="date" id="c-date"></div>
+      <div class="field"><label>Preceptor / Attending Surgeon</label><input type="text" id="c-prec" placeholder="Dr. John Doe"></div>
+      <div class="field"><label>Hospital / Site</label><input type="text" id="c-site" placeholder="Toronto General Hospital — OR 4"></div>
+      <div class="field"><label>Diagnosis / Indication</label><input type="text" id="c-diag" placeholder="Acute appendicitis, Cholelithiasis…"></div>
+      <hr class="divider">
+      <div class="field">
+        <label>Procedures Performed</label>
+        <p style="font-size:12px;color:var(--text2);margin-bottom:10px">Add each procedure and your role at that step.</p>
+        <div id="proc-builder"></div>
+        <button class="btn-add-proc" onclick="addProcRow()">+ Add Procedure</button>
+      </div>
+      <hr class="divider">
+      <div class="field"><label>Notes / Reflections</label><textarea id="c-notes" placeholder="Key learnings, complications, techniques to review…"></textarea></div>
+      <div id="case-err" class="err" style="display:none"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="cm('modal-case')">Cancel</button>
+      <button class="btn btn-primary" style="width:auto" id="btn-save" onclick="saveCase()">Save Case</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Case Detail (resident) -->
+<div class="modal-overlay" id="modal-det">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Case Details</span>
+      <button class="modal-close" onclick="cm('modal-det')">×</button>
+    </div>
+    <div class="modal-body" id="modal-det-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-danger btn-sm" onclick="deleteCase()">Delete</button>
+      <button class="btn btn-ghost" onclick="cm('modal-det')">Close</button>
+      <button class="btn btn-primary" style="width:auto" onclick="editFromDetail()">Edit</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Case Detail (preceptor) -->
+<div class="modal-overlay" id="modal-pdet">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Case Details</span>
+      <button class="modal-close" onclick="cm('modal-pdet')">×</button>
+    </div>
+    <div class="modal-body" id="modal-pdet-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="cm('modal-pdet')">Close</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════════
+//  ⚙️  CONFIGURATION
+//  After deploying your Google Apps Script, paste
+//  the Web App URL below, replacing the placeholder.
+// ══════════════════════════════════════════════════
+const API_URL = "https://script.google.com/macros/s/AKfycbwiweD1g_Kj1V1iATL1Q3QNDIBy0N3K84O9DDUbVnaZXOZUX94dD4yABU4Dqr9U_ur6/exec";
+
+// ══════════════════════════════════════════════════
+//  API LAYER
+// ══════════════════════════════════════════════════
+async function api(action, payload = {}) {
+  saving(true);
+  try {
+    // Use GET with encoded payload — avoids CORS preflight and redirect issues
+    // Google Apps Script redirects POST to GET, losing the body; GET works reliably
+    const params = new URLSearchParams({
+      action,
+      payload: JSON.stringify(payload)
+    });
+    const res = await fetch(`${API_URL}?${params.toString()}`, { method: 'GET' });
+    const json = await res.json();
+    if (!json.ok) throw new Error(json.error || 'Request failed');
+    return json.data;
+  } finally {
+    saving(false);
+  }
+}
+
+// ══════════════════════════════════════════════════
+//  SESSION CACHE  (localStorage, within-session speed)
+// ══════════════════════════════════════════════════
+const C = {
+  get: k  => { try { const v=localStorage.getItem(k); return v?JSON.parse(v):null; } catch{return null;} },
+  set: (k,v) => { try { localStorage.setItem(k,JSON.stringify(v)); } catch{} },
+  del: k  => { try { localStorage.removeItem(k); } catch{} }
+};
+
+// ══════════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════════
+let CU       = null;   // current user profile
+let resCases = [];     // resident's loaded cases
+let selRole  = 'resident';
+let editId   = null;
+let detId    = null;
+let viewRes  = null;   // { profile, cases, feedback } for preceptor detail
+
+// ══════════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════════
+window.addEventListener('DOMContentLoaded', () => {
+  // Show warning if not configured
+  if (API_URL === 'PASTE_YOUR_SCRIPT_URL_HERE') {
+    document.getElementById('config-warn').classList.add('show');
+  }
+
+  // Restore session
+  const sess = C.get('lb_session');
+  if (sess) {
+    CU = sess;
+    setLoading('Restoring your session…');
+    if (CU.role === 'preceptor') {
+      showPrecDash();
+    } else {
+      loadResidentCases().then(showResDash);
+    }
+  } else {
+    sc('screen-loading', false);
+    sc('screen-auth', true);
+  }
+});
+
+function setLoading(msg) {
+  document.getElementById('loading-text').textContent = msg;
+  sc('screen-loading', true);
+}
+
+// ══════════════════════════════════════════════════
+//  AUTH
+// ══════════════════════════════════════════════════
+function selectRole(r) {
+  selRole = r;
+  document.getElementById('ropt-res').className  = 'role-opt' + (r === 'resident'  ? ' sel-res'  : '');
+  document.getElementById('ropt-prec').className = 'role-opt' + (r === 'preceptor' ? ' sel-prec' : '');
+  const isP = r === 'preceptor';
+  document.getElementById('fld-license').style.display = isP ? 'none' : '';
+  document.getElementById('fld-program').style.display = isP ? 'none' : '';
+  document.getElementById('fld-title').style.display   = isP ? ''     : 'none';
+  document.getElementById('btn-login').textContent = isP ? 'Sign In as Preceptor' : 'Sign In as Resident / Fellow';
+  document.getElementById('btn-reg').textContent   = isP ? 'Create Preceptor Account' : 'Create Resident Account';
+}
+
+function switchTab(t) {
+  document.getElementById('tb-login').classList.toggle('active', t === 'login');
+  document.getElementById('tb-reg').classList.toggle('active',   t !== 'login');
+  document.getElementById('form-login').style.display    = t === 'login' ? '' : 'none';
+  document.getElementById('form-register').style.display = t === 'login' ? 'none' : '';
+}
+
+async function doRegister() {
+  const name    = g('reg-name').trim();
+  const email   = g('reg-email').trim().toLowerCase();
+  const pass    = g('reg-pass');
+  const errEl   = document.getElementById('reg-err');
+  errEl.style.display = 'none';
+  if (!name || !email || !pass) return se(errEl, 'Please fill in all required fields.');
+  if (pass.length < 6)          return se(errEl, 'Password must be at least 6 characters.');
+  if (API_URL === 'PASTE_YOUR_SCRIPT_URL_HERE') return se(errEl, 'The app is not configured yet. Please follow the setup instructions.');
+
+  btnLoad('btn-reg', true, 'Creating account…');
+  try {
+    await api('register', {
+      name, email, password: pass,
+      role:     selRole,
+      license:  g('reg-license').trim(),
+      program:  g('reg-program').trim(),
+      title:    g('reg-title').trim()
+    });
+    toast('Account created! Sign in to continue.');
+    switchTab('login');
+    document.getElementById('login-email').value = email;
+  } catch(e) {
+    se(errEl, e.message);
+  } finally {
+    btnLoad('btn-reg', false, selRole === 'preceptor' ? 'Create Preceptor Account' : 'Create Resident Account');
+  }
+}
+
+async function doLogin() {
+  const email = g('login-email').trim().toLowerCase();
+  const pass  = g('login-pass');
+  const errEl = document.getElementById('login-err');
+  errEl.style.display = 'none';
+  if (!email || !pass) return se(errEl, 'Please enter your email and password.');
+  if (API_URL === 'PASTE_YOUR_SCRIPT_URL_HERE') return se(errEl, 'The app is not configured yet. Please follow the setup instructions.');
+
+  btnLoad('btn-login', true, 'Signing in…');
+  try {
+    const user = await api('login', { email, password: pass });
+    if ((user.role || 'resident') !== selRole) {
+      return se(errEl, `This account is registered as a ${user.role || 'resident'}. Please select the correct role above.`);
+    }
+    CU = user;
+    C.set('lb_session', CU);
+    if (CU.role === 'preceptor') {
+      showPrecDash();
+    } else {
+      setLoading('Loading your cases…');
+      await loadResidentCases();
+      showResDash();
+    }
+  } catch(e) {
+    se(errEl, e.message);
+  } finally {
+    btnLoad('btn-login', false, selRole === 'preceptor' ? 'Sign In as Preceptor' : 'Sign In as Resident / Fellow');
+  }
+}
+
+function doLogout() {
+  C.del('lb_session');
+  CU = null; resCases = []; viewRes = null;
+  ['screen-res','screen-prec','screen-loading'].forEach(id => sc(id, false));
+  sc('screen-auth', true);
+}
+
+// ══════════════════════════════════════════════════
+//  RESIDENT
+// ══════════════════════════════════════════════════
+async function loadResidentCases() {
+  resCases = await api('getCases', { email: CU.email });
+}
+
+function showResDash() {
+  ['screen-loading','screen-auth','screen-prec'].forEach(id => sc(id, false));
+  sc('screen-res', true);
+  document.getElementById('res-avatar').textContent = CU.name.charAt(0).toUpperCase();
+  document.getElementById('res-uname').textContent  = CU.name.split(' ').slice(-1)[0];
+  document.getElementById('res-sub').textContent    = [CU.license, CU.program].filter(Boolean).join(' · ');
+  renderCaseList();
+  loadResFeedback();
+}
+
+function renderCaseList() {
+  const srch  = g('res-search').toLowerCase();
+  const role  = g('res-filter');
+  const month = new Date().toISOString().slice(0,7);
+
+  document.getElementById('s-total').textContent   = resCases.length;
+  document.getElementById('s-primary').textContent = resCases.filter(c=>c.procs?.some(p=>p.role==='Primary Surgeon')).length;
+  document.getElementById('s-assist').textContent  = resCases.filter(c=>c.procs?.some(p=>p.role==='Assistant')).length;
+  document.getElementById('s-month').textContent   = resCases.filter(c=>c.date?.startsWith(month)).length;
+
+  const fil = resCases.filter(c => {
+    const ms = !srch || [c.preceptor,c.diagnosis,c.site,...(c.procs||[]).map(p=>p.name)].join(' ').toLowerCase().includes(srch);
+    const mr = !role || (c.procs||[]).some(p=>p.role===role);
+    return ms && mr;
+  });
+  document.getElementById('res-case-list').innerHTML = fil.length ? fil.map(c=>caseCardHTML(c,'res')).join('') : emptyHTML(resCases.length);
+}
+
+async function loadResFeedback() {
+  try {
+    const items = await api('getFeedback', { email: CU.email });
+    const sec   = document.getElementById('res-fb-section');
+    if (!items.length) { sec.style.display='none'; return; }
+    sec.style.display = '';
+    document.getElementById('res-fb-list').innerHTML = items.map(f=>`
+      <div class="fb-bubble fb-res">
+        <div>${esc(f.text)}</div>
+        <div class="fb-meta">— ${esc(f.fromName)} · ${fmtDT(f.sentAt)}</div>
+      </div>`).join('');
+  } catch {}
+}
+
+// ══════════════════════════════════════════════════
+//  CASE MODAL
+// ══════════════════════════════════════════════════
+function openNewModal() {
+  editId = null;
+  document.getElementById('modal-case-title').textContent = 'Log a Case';
+  document.getElementById('c-date').value = new Date().toISOString().slice(0,10);
+  ['c-prec','c-site','c-diag','c-notes'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('proc-builder').innerHTML = '';
+  document.getElementById('case-err').style.display = 'none';
+  addProcRow();
+  om('modal-case');
+}
+
+function editFromDetail() {
+  const c = resCases.find(x => x.id === detId); if (!c) return;
+  cm('modal-det');
+  editId = c.id;
+  document.getElementById('modal-case-title').textContent = 'Edit Case';
+  document.getElementById('c-date').value  = c.date;
+  document.getElementById('c-prec').value  = c.preceptor;
+  document.getElementById('c-site').value  = c.site || '';
+  document.getElementById('c-diag').value  = c.diagnosis;
+  document.getElementById('c-notes').value = c.notes || '';
+  document.getElementById('proc-builder').innerHTML = '';
+  (c.procs||[]).forEach(p => addProcRow(p.name, p.role));
+  if (!(c.procs||[]).length) addProcRow();
+  document.getElementById('case-err').style.display = 'none';
+  om('modal-case');
+}
+
+function addProcRow(name='', role='Primary Surgeon') {
+  const d = document.createElement('div'); d.className = 'proc-row';
+  d.innerHTML = `
+    <input type="text" placeholder="e.g., Laparoscopic appendectomy" value="${esc(name)}">
+    <select>
+      <option ${role==='Primary Surgeon'?'selected':''}>Primary Surgeon</option>
+      <option ${role==='Assistant'?'selected':''}>Assistant</option>
+      <option ${role==='Observer'?'selected':''}>Observer</option>
+    </select>
+    <button class="rm" onclick="this.parentElement.remove()">×</button>`;
+  document.getElementById('proc-builder').appendChild(d);
+}
+
+async function saveCase() {
+  const date = g('c-date'), prec = g('c-prec').trim(), site = g('c-site').trim(),
+        diag = g('c-diag').trim(), notes = g('c-notes').trim();
+  const errEl = document.getElementById('case-err');
+  errEl.style.display = 'none';
+  if (!date || !prec || !diag) return se(errEl, 'Date, preceptor, and diagnosis are required.');
+  const procs = [...document.querySelectorAll('#proc-builder .proc-row')]
+    .map(r => ({ name: r.querySelector('input').value.trim(), role: r.querySelector('select').value }))
+    .filter(p => p.name);
+  if (!procs.length) return se(errEl, 'Add at least one procedure.');
+
+  btnLoad('btn-save', true, 'Saving…');
+  try {
+    const id = editId || `case_${Date.now()}_${Math.random().toString(36).slice(2,6)}`;
+    const rec = { id, userEmail: CU.email, date, preceptor: prec, site, diagnosis: diag, notes, procs };
+    await api('saveCase', { case: rec });
+
+    // Update local list
+    if (editId) {
+      resCases = resCases.map(c => c.id === editId ? { ...rec, procs } : c);
+    } else {
+      resCases.unshift({ ...rec, procs });
+    }
+    cm('modal-case');
+    renderCaseList();
+    toast(editId ? 'Case updated!' : 'Case logged!');
+  } catch(e) {
+    se(errEl, 'Failed to save. Please try again.');
+  } finally {
+    btnLoad('btn-save', false, 'Save Case');
+  }
+}
+
+function openDetail(id) {
+  detId = id;
+  const c = resCases.find(x => x.id === id); if (!c) return;
+  document.getElementById('modal-det-body').innerHTML = detailHTML(c);
+  om('modal-det');
+}
+
+async function deleteCase() {
+  if (!confirm('Delete this case? This cannot be undone.')) return;
+  try {
+    await api('deleteCase', { id: detId, userEmail: CU.email });
+    resCases = resCases.filter(c => c.id !== detId);
+    cm('modal-det');
+    renderCaseList();
+    toast('Case deleted.');
+  } catch(e) {
+    toast('Failed to delete. Try again.', 'err');
+  }
+}
+
+// ══════════════════════════════════════════════════
+//  PRECEPTOR
+// ══════════════════════════════════════════════════
+async function showPrecDash() {
+  ['screen-loading','screen-auth','screen-res'].forEach(id => sc(id, false));
+  sc('screen-prec', true);
+  document.getElementById('prec-avatar').textContent = CU.name.charAt(0).toUpperCase();
+  document.getElementById('prec-uname').textContent  = CU.name.split(' ').slice(-1)[0];
+  document.getElementById('prec-sub').textContent    = CU.title || 'Preceptor';
+  document.getElementById('pv-list').style.display   = '';
+  document.getElementById('pv-detail').style.display = 'none';
+  await renderGrid();
+}
+
+async function renderGrid() {
+  let residents = [];
+  try { residents = await api('getResidents', {}); } catch {}
+  const srch = (g('prec-search')||'').toLowerCase();
+  const fil  = residents.filter(r => !srch || r.name.toLowerCase().includes(srch) || (r.program||'').toLowerCase().includes(srch));
+
+  // Load cases for each resident (parallel)
+  const allCasesArr = await Promise.all(
+    residents.map(r => api('getCases', { email: r.email }).catch(() => []))
+  );
+  const casesByEmail = {};
+  residents.forEach((r,i) => casesByEmail[r.email] = allCasesArr[i]);
+
+  // Global stats
+  const month = new Date().toISOString().slice(0,7);
+  const allCases = allCasesArr.flat();
+  const allProcs = new Set(allCases.flatMap(c=>(c.procs||[]).map(p=>p.name.toLowerCase())));
+  document.getElementById('ps-res').textContent   = residents.length;
+  document.getElementById('ps-cases').textContent = allCases.length;
+  document.getElementById('ps-month').textContent = allCases.filter(c=>c.date?.startsWith(month)).length;
+  document.getElementById('ps-procs').textContent = allProcs.size;
+
+  const grid = document.getElementById('resident-grid');
+  if (!fil.length) {
+    grid.innerHTML = `<div class="empty" style="grid-column:1/-1">
+      <div class="empty-icon">👥</div>
+      <div class="empty-text">No trainees registered yet</div>
+      <div class="empty-sub">Trainees will appear here once they create an account.</div>
+    </div>`;
+    return;
+  }
+  grid.innerHTML = fil.map(r => {
+    const cases   = casesByEmail[r.email] || [];
+    const primary = cases.filter(c=>c.procs?.some(p=>p.role==='Primary Surgeon')).length;
+    const assist  = cases.filter(c=>c.procs?.some(p=>p.role==='Assistant')).length;
+    return `<div class="resident-card" onclick="openResDetail('${r.email}', ${JSON.stringify(cases).replace(/"/g,'&quot;')}, '${esc(r.name)}', '${esc(r.license||'')}', '${esc(r.program||'')}')">
+      <div class="rc-header">
+        <div class="rc-avatar">${r.name.charAt(0).toUpperCase()}</div>
+        <div><div class="rc-name">${esc(r.name)}</div><div class="rc-meta">${esc(r.license||'')} ${r.program?'· '+esc(r.program.split('·')[0].trim()):''}</div></div>
+      </div>
+      <div class="rc-stats">
+        <div class="rc-stat"><div class="rc-stat-val">${cases.length}</div><div class="rc-stat-lbl">Cases</div></div>
+        <div class="rc-stat"><div class="rc-stat-val" style="color:var(--green)">${primary}</div><div class="rc-stat-lbl">Primary</div></div>
+        <div class="rc-stat"><div class="rc-stat-val" style="color:var(--amber)">${assist}</div><div class="rc-stat-lbl">Assist</div></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function openResDetail(email, casesJSON, name, license, program) {
+  // casesJSON is passed inline from the card click
+  let cases = [];
+  try { cases = typeof casesJSON === 'string' ? JSON.parse(casesJSON.replace(/&quot;/g,'"')) : casesJSON; } catch {}
+  let feedback = [];
+  try { feedback = await api('getFeedback', { email }); } catch {}
+  viewRes = { email, name, license, program, cases, feedback };
+
+  document.getElementById('pv-list').style.display   = 'none';
+  document.getElementById('pv-detail').style.display = '';
+
+  const primary = cases.filter(c=>c.procs?.some(p=>p.role==='Primary Surgeon')).length;
+  const assist  = cases.filter(c=>c.procs?.some(p=>p.role==='Assistant')).length;
+  document.getElementById('prec-res-header').innerHTML = `
+    <div class="res-full-avatar">${name.charAt(0).toUpperCase()}</div>
+    <div style="flex:1">
+      <div class="res-full-name">${esc(name)}</div>
+      <div class="res-full-sub">${[license,program].filter(Boolean).join(' · ')||'Trainee'}</div>
+    </div>
+    <div class="res-full-stats">
+      <div class="rfs"><div class="rfs-val">${cases.length}</div><div class="rfs-lbl">Cases</div></div>
+      <div class="rfs"><div class="rfs-val" style="color:var(--green)">${primary}</div><div class="rfs-lbl">Primary</div></div>
+      <div class="rfs"><div class="rfs-val" style="color:var(--amber)">${assist}</div><div class="rfs-lbl">Assist</div></div>
+    </div>`;
+  precTab('cases');
+}
+
+function backToList() {
+  viewRes = null;
+  document.getElementById('pv-list').style.display   = '';
+  document.getElementById('pv-detail').style.display = 'none';
+}
+
+function precTab(tab) {
+  document.querySelectorAll('.dash-tab').forEach((t,i) => t.classList.toggle('active', ['cases','procedures','feedback'][i] === tab));
+  document.querySelectorAll('.dash-tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById(`ptab-${tab}`).classList.add('active');
+  if (tab === 'cases')      renderPrecCases();
+  if (tab === 'procedures') renderProcAnalysis();
+  if (tab === 'feedback')   renderFeedback();
+}
+
+function renderPrecCases() {
+  if (!viewRes) return;
+  const srch = (g('ps-search')||'').toLowerCase();
+  const role = g('ps-role')||'';
+  const fil  = (viewRes.cases||[])
+    .slice().sort((a,b)=>b.date.localeCompare(a.date))
+    .filter(c => {
+      const ms = !srch || [c.preceptor,c.diagnosis,c.site,...(c.procs||[]).map(p=>p.name)].join(' ').toLowerCase().includes(srch);
+      const mr = !role || (c.procs||[]).some(p=>p.role===role);
+      return ms && mr;
+    });
+  document.getElementById('prec-case-list').innerHTML = fil.length ? fil.map(c=>caseCardHTML(c,'prec')).join('') : emptyHTML(viewRes.cases.length);
+}
+
+function openPrecCaseDet(id) {
+  if (!viewRes) return;
+  const c = viewRes.cases.find(x=>x.id===id); if (!c) return;
+  document.getElementById('modal-pdet-body').innerHTML = detailHTML(c);
+  om('modal-pdet');
+}
+
+function renderProcAnalysis() {
+  if (!viewRes) return;
+  const map = {};
+  (viewRes.cases||[]).forEach(c => (c.procs||[]).forEach(p => {
+    if (!map[p.name]) map[p.name] = { 'Primary Surgeon':0, 'Assistant':0, 'Observer':0 };
+    map[p.name][p.role] = (map[p.name][p.role]||0) + 1;
+  }));
+  const entries = Object.entries(map).sort(([,a],[,b]) => {
+    return (b['Primary Surgeon']+b.Assistant+b.Observer) - (a['Primary Surgeon']+a.Assistant+a.Observer);
+  });
+  const el = document.getElementById('proc-analysis');
+  if (!entries.length) { el.innerHTML=`<div class="empty"><div class="empty-icon">📊</div><div class="empty-text">No procedures logged yet</div></div>`; return; }
+  const mx = Math.max(...entries.map(([,v])=>v['Primary Surgeon']+v.Assistant+v.Observer), 1);
+  el.innerHTML = `<div class="pa-list">${entries.map(([name,c])=>{
+    const tot=c['Primary Surgeon']+c.Assistant+c.Observer, pct=n=>Math.round((n/mx)*100);
+    return `<div class="pa-row">
+      <div class="pa-header"><span class="pa-name">${esc(name)}</span><span class="pa-total">${tot}× total</span></div>
+      <div class="pa-bars">
+        <div class="pa-bar-row"><span class="pa-bar-lbl">Primary</span><div class="pa-bar"><div class="pa-fill fill-p" style="width:${pct(c['Primary Surgeon'])}%"></div></div><span class="pa-count">${c['Primary Surgeon']}</span></div>
+        <div class="pa-bar-row"><span class="pa-bar-lbl">Assistant</span><div class="pa-bar"><div class="pa-fill fill-a" style="width:${pct(c.Assistant)}%"></div></div><span class="pa-count">${c.Assistant}</span></div>
+        <div class="pa-bar-row"><span class="pa-bar-lbl">Observer</span><div class="pa-bar"><div class="pa-fill fill-o" style="width:${pct(c.Observer)}%"></div></div><span class="pa-count">${c.Observer}</span></div>
+      </div></div>`;
+  }).join('')}</div>`;
+}
+
+function renderFeedback() {
+  if (!viewRes) return;
+  const items = viewRes.feedback||[];
+  document.getElementById('feedback-thread').innerHTML = items.length
+    ? items.map(f=>`<div class="fb-bubble"><div>${esc(f.text)}</div><div class="fb-meta">— ${esc(f.fromName)} · ${fmtDT(f.sentAt)}</div></div>`).join('')
+    : `<p style="color:var(--text3);font-size:14px;text-align:center;padding:18px 0">No feedback sent yet.</p>`;
+}
+
+async function sendFeedback() {
+  const text = document.getElementById('feedback-text').value.trim();
+  if (!text || !viewRes) return;
+  try {
+    await api('saveFeedback', { toEmail: viewRes.email, fromName: CU.name, text });
+    const newItem = { text, fromName: CU.name, sentAt: new Date().toISOString() };
+    viewRes.feedback = [...(viewRes.feedback||[]), newItem];
+    document.getElementById('feedback-text').value = '';
+    renderFeedback();
+    toast('Feedback sent!');
+  } catch { toast('Failed to send feedback.', 'err'); }
+}
+
+// ══════════════════════════════════════════════════
+//  SHARED HTML HELPERS
+// ══════════════════════════════════════════════════
+function caseCardHTML(c, ctx) {
+  const chips = (c.procs||[]).slice(0,4).map(p => {
+    const cls = p.role==='Primary Surgeon'?'p':p.role==='Assistant'?'a':'';
+    return `<span class="proc-chip ${cls}">${esc(p.name)} · ${p.role}</span>`;
+  }).join('');
+  const more  = (c.procs||[]).length>4 ? `<span class="proc-chip">+${c.procs.length-4}</span>` : '';
+  const click = ctx==='res' ? `onclick="openDetail('${c.id}')"` : `onclick="openPrecCaseDet('${c.id}')"`;
+  return `<div class="case-card" ${click}>
+    <div class="cc-header">
+      <div>
+        <span class="cc-tag">#${c.id.toString().slice(-5).toUpperCase()}</span>
+        <div class="cc-title">${esc(c.diagnosis||'No diagnosis recorded')}</div>
+        <div class="cc-meta">👨‍⚕️ ${esc(c.preceptor)} ${c.site?'· 📍 '+esc(c.site):''}</div>
+      </div>
+      <div class="cc-date">${fmtDate(c.date)}</div>
+    </div>
+    ${(c.procs||[]).length ? `<div class="cc-procs">${chips}${more}</div>` : ''}
+  </div>`;
+}
+
+function detailHTML(c) {
+  const rc = {'Primary Surgeon':'role-p','Assistant':'role-a','Observer':'role-o'};
+  const rows = (c.procs||[]).map(p=>`<tr><td>${esc(p.name)}</td><td><span class="role-badge ${rc[p.role]||''}">${p.role}</span></td></tr>`).join('');
+  return `
+    <div class="detail-section"><div class="detail-label">Date</div><div class="detail-value">${fmtDate(c.date)}</div></div>
+    <div class="detail-section"><div class="detail-label">Preceptor / Attending</div><div class="detail-value">${esc(c.preceptor)}</div></div>
+    ${c.site?`<div class="detail-section"><div class="detail-label">Hospital / Site</div><div class="detail-value">${esc(c.site)}</div></div>`:''}
+    <div class="detail-section"><div class="detail-label">Diagnosis / Indication</div><div class="detail-value">${esc(c.diagnosis)}</div></div>
+    <hr class="divider">
+    <div class="detail-section"><div class="detail-label">Procedures</div>
+      <table class="proc-table"><thead><tr><th>Procedure</th><th>Role</th></tr></thead><tbody>${rows}</tbody></table>
+    </div>
+    ${c.notes?`<hr class="divider"><div class="detail-section"><div class="detail-label">Notes / Reflections</div><div class="detail-value" style="white-space:pre-wrap">${esc(c.notes)}</div></div>`:''}`;
+}
+
+function emptyHTML(has) {
+  return `<div class="empty"><div class="empty-icon">🔬</div>
+    <div class="empty-text">${has?'No results found':'No cases logged yet'}</div>
+    <div class="empty-sub">${has?'Try a different search or filter.':'Click "+ Log a Case" to get started.'}</div></div>`;
+}
+
+// ══════════════════════════════════════════════════
+//  UTILS
+// ══════════════════════════════════════════════════
+function g(id)   { return document.getElementById(id)?.value||''; }
+function sc(id,v){ document.getElementById(id).classList.toggle('active',!!v); }
+function om(id)  { document.getElementById(id).classList.add('open'); }
+function cm(id)  { document.getElementById(id).classList.remove('open'); }
+function se(el,msg){ el.textContent=msg; el.style.display='block'; }
+function esc(s)  { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function saving(on){ document.getElementById('saving-bar').classList.toggle('on',on); }
+function fmtDate(d){ if(!d)return'—'; const[y,m,day]=d.split('-'); return `${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+m-1]} ${+day}, ${y}`; }
+function fmtDT(dt) { try{return new Date(dt).toLocaleString('en-CA',{dateStyle:'medium',timeStyle:'short'});}catch{return dt;} }
+
+function btnLoad(id,on,label){
+  const el=document.getElementById(id); if(!el)return;
+  el.disabled=on; if(label)el.textContent=on?label:label;
+}
+
+function toast(msg,type=''){
+  const el=document.getElementById('toast');
+  el.textContent=msg; el.className=`toast ${type} show`;
+  setTimeout(()=>el.classList.remove('show'),3200);
+}
+
+document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
+document.addEventListener('keydown',e=>{if(e.key==='Escape')document.querySelectorAll('.modal-overlay.open').forEach(m=>m.classList.remove('open'));});
+</script>
+</body>
+</html>
