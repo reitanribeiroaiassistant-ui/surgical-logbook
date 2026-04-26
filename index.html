@@ -1,0 +1,1072 @@
+/tmp/surgical-logbook/
+index.html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Surgical Logbook — Canadian Medical Residency</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏥</text></svg>">
+<style>
+  :root {
+    --red:    #C0392B;
+    --red-d:  #96281B;
+    --blue:   #2C3E50;
+    --blue-l: #34495E;
+    --teal:   #1ABC9C;
+    --teal-d: #16A085;
+    --gray:   #ECF0F1;
+    --text:   #2C3E50;
+    --border: #BDC3C7;
+    --white:  #FFFFFF;
+    --shadow: 0 2px 12px rgba(0,0,0,.10);
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--gray); color: var(--text); min-height: 100vh; }
+
+  /* ── NAV ── */
+  nav {
+    background: var(--blue);
+    color: #fff;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: .9rem 1.5rem;
+    position: sticky; top: 0; z-index: 100;
+    box-shadow: 0 2px 8px rgba(0,0,0,.3);
+  }
+  nav .brand { display: flex; align-items: center; gap: .6rem; font-size: 1.2rem; font-weight: 700; }
+  nav .brand span.maple { color: var(--red); font-size: 1.4rem; }
+  nav .user-info { font-size: .85rem; opacity: .85; }
+  nav button.logout {
+    background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.25);
+    color: #fff; padding: .35rem .9rem; border-radius: 6px; cursor: pointer; font-size: .85rem;
+    transition: background .2s;
+  }
+  nav button.logout:hover { background: rgba(255,255,255,.22); }
+  nav .nav-right { display: flex; align-items: center; gap: 1rem; }
+
+  /* ── LAYOUT ── */
+  .page { display: none; }
+  .page.active { display: block; }
+  .container { max-width: 960px; margin: 0 auto; padding: 1.5rem; }
+  .wide { max-width: 1200px; }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--white); border-radius: 12px;
+    box-shadow: var(--shadow); padding: 1.5rem; margin-bottom: 1.25rem;
+  }
+  .card h2 { font-size: 1.1rem; margin-bottom: 1rem; color: var(--blue); border-bottom: 2px solid var(--gray); padding-bottom: .5rem; }
+  .card h3 { font-size: .95rem; margin-bottom: .75rem; color: var(--blue-l); }
+
+  /* ── AUTH ── */
+  .auth-wrap {
+    min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(135deg, var(--blue) 0%, var(--blue-l) 100%);
+  }
+  .auth-box {
+    background: var(--white); border-radius: 16px; box-shadow: 0 8px 40px rgba(0,0,0,.25);
+    padding: 2.5rem; width: 100%; max-width: 420px;
+  }
+  .auth-box .logo { text-align: center; margin-bottom: 1.5rem; }
+  .auth-box .logo .maple-flag { font-size: 3rem; }
+  .auth-box .logo h1 { font-size: 1.4rem; color: var(--blue); font-weight: 700; }
+  .auth-box .logo p { font-size: .82rem; color: #777; }
+
+  /* ── TABS (auth) ── */
+  .auth-tabs { display: flex; margin-bottom: 1.5rem; border-bottom: 2px solid var(--gray); }
+  .auth-tabs button {
+    flex: 1; background: none; border: none; padding: .7rem; cursor: pointer;
+    font-size: .95rem; color: #777; font-weight: 500; transition: color .2s;
+  }
+  .auth-tabs button.active { color: var(--red); border-bottom: 3px solid var(--red); margin-bottom: -2px; }
+
+  /* ── FORMS ── */
+  .form-group { margin-bottom: 1rem; }
+  label { display: block; font-size: .82rem; font-weight: 600; color: var(--text); margin-bottom: .35rem; }
+  input, select, textarea {
+    width: 100%; padding: .55rem .75rem; border: 1px solid var(--border);
+    border-radius: 8px; font-size: .92rem; color: var(--text);
+    transition: border-color .2s, box-shadow .2s; background: #fff;
+  }
+  input:focus, select:focus, textarea:focus {
+    outline: none; border-color: var(--teal); box-shadow: 0 0 0 3px rgba(26,188,156,.15);
+  }
+  textarea { resize: vertical; min-height: 80px; }
+
+  /* ── BUTTONS ── */
+  .btn {
+    display: inline-flex; align-items: center; gap: .4rem;
+    padding: .55rem 1.2rem; border-radius: 8px; font-size: .9rem;
+    font-weight: 600; cursor: pointer; border: none; transition: all .2s;
+  }
+  .btn-primary { background: var(--teal); color: #fff; }
+  .btn-primary:hover { background: var(--teal-d); transform: translateY(-1px); }
+  .btn-danger  { background: var(--red); color: #fff; }
+  .btn-danger:hover  { background: var(--red-d); }
+  .btn-outline { background: none; border: 2px solid var(--teal); color: var(--teal); }
+  .btn-outline:hover { background: var(--teal); color: #fff; }
+  .btn-sm { padding: .3rem .75rem; font-size: .82rem; }
+  .btn-block { width: 100%; justify-content: center; }
+  .btn:disabled { opacity: .6; cursor: not-allowed; transform: none !important; }
+
+  /* ── ALERTS ── */
+  .alert {
+    padding: .75rem 1rem; border-radius: 8px; font-size: .88rem;
+    margin-bottom: 1rem; display: none;
+  }
+  .alert.show { display: block; }
+  .alert-error   { background: #FDEDEC; color: #C0392B; border-left: 4px solid #C0392B; }
+  .alert-success { background: #EAFAF1; color: #1E8449; border-left: 4px solid #1E8449; }
+
+  /* ── STAT CARDS ── */
+  .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px,1fr)); gap: 1rem; margin-bottom: 1.25rem; }
+  .stat-card {
+    background: var(--white); border-radius: 12px; box-shadow: var(--shadow);
+    padding: 1.2rem 1rem; text-align: center;
+  }
+  .stat-card .num { font-size: 2rem; font-weight: 700; color: var(--blue); }
+  .stat-card .lbl { font-size: .78rem; color: #777; margin-top: .2rem; }
+  .stat-card.teal .num { color: var(--teal-d); }
+  .stat-card.red  .num { color: var(--red); }
+
+  /* ── PROGRESS BARS ── */
+  .proc-bar { margin-bottom: .75rem; }
+  .proc-bar .label-row { display: flex; justify-content: space-between; font-size: .82rem; margin-bottom: .3rem; }
+  .bar-track { background: var(--gray); border-radius: 99px; height: 10px; overflow: hidden; }
+  .bar-fill  { background: linear-gradient(90deg, var(--teal), var(--blue)); height: 100%; border-radius: 99px; transition: width .6s ease; }
+
+  /* ── TABLE ── */
+  .tbl-wrap { overflow-x: auto; border-radius: 8px; }
+  table { width: 100%; border-collapse: collapse; font-size: .88rem; }
+  th { background: var(--blue); color: #fff; padding: .6rem .9rem; text-align: left; white-space: nowrap; }
+  td { padding: .55rem .9rem; border-bottom: 1px solid var(--gray); }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #f7f9fc; }
+
+  /* ── CASE CARDS ── */
+  .case-card {
+    border: 1px solid var(--border); border-radius: 10px; padding: 1rem 1.1rem;
+    margin-bottom: .85rem; background: #fff; position: relative;
+  }
+  .case-card .case-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; }
+  .case-card .case-title { font-weight: 700; font-size: .95rem; color: var(--blue); }
+  .case-card .case-meta  { font-size: .78rem; color: #777; margin-top: .2rem; }
+  .case-card .procs      { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .6rem; }
+  .badge {
+    display: inline-flex; align-items: center; gap: .25rem;
+    padding: .2rem .55rem; border-radius: 99px; font-size: .75rem; font-weight: 600;
+  }
+  .badge-primary  { background: #D6EAF8; color: #1A5276; }
+  .badge-assistant{ background: #D5F5E3; color: #145A32; }
+  .badge-observer { background: #FCF3CF; color: #7D6608; }
+  .case-card .notes-text { font-size: .83rem; color: #555; margin-top: .5rem; font-style: italic; }
+
+  /* ── PROCEDURE BUILDER ── */
+  .proc-builder { border: 1px dashed var(--border); border-radius: 8px; padding: 1rem; }
+  .proc-row { display: flex; align-items: center; gap: .5rem; margin-bottom: .5rem; flex-wrap: wrap; }
+  .proc-row input { flex: 2; min-width: 120px; }
+  .proc-row select { flex: 1; min-width: 120px; }
+  .proc-row .remove-proc { background: none; border: none; color: var(--red); cursor: pointer; font-size: 1.1rem; flex-shrink: 0; }
+  #add-proc-btn { margin-top: .5rem; }
+
+  /* ── SIDEBAR LAYOUT ── */
+  .dashboard-layout { display: grid; grid-template-columns: 220px 1fr; gap: 1.25rem; }
+  @media (max-width: 640px) { .dashboard-layout { grid-template-columns: 1fr; } }
+  .sidebar { background: var(--white); border-radius: 12px; box-shadow: var(--shadow); padding: 1rem; height: fit-content; }
+  .sidebar-menu { list-style: none; }
+  .sidebar-menu li a {
+    display: flex; align-items: center; gap: .6rem; padding: .6rem .75rem;
+    border-radius: 8px; color: var(--text); text-decoration: none; font-size: .9rem;
+    transition: background .15s; cursor: pointer;
+  }
+  .sidebar-menu li a:hover  { background: var(--gray); }
+  .sidebar-menu li a.active { background: var(--blue); color: #fff; font-weight: 600; }
+  .sidebar-menu li .icon { font-size: 1rem; }
+
+  /* ── FEEDBACK CARDS ── */
+  .fb-card {
+    background: #F9F9FF; border-left: 4px solid var(--blue);
+    border-radius: 8px; padding: .85rem 1rem; margin-bottom: .75rem;
+  }
+  .fb-card .fb-from  { font-size: .78rem; color: #777; margin-bottom: .3rem; }
+  .fb-card .fb-msg   { font-size: .9rem; }
+
+  /* ── RESIDENT SELECTOR ── */
+  .resident-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: .7rem .9rem; border-bottom: 1px solid var(--gray); cursor: pointer;
+    transition: background .15s;
+  }
+  .resident-row:last-child { border-bottom: none; }
+  .resident-row:hover { background: var(--gray); border-radius: 8px; }
+  .resident-row .rname { font-weight: 600; font-size: .92rem; }
+  .resident-row .rmeta { font-size: .78rem; color: #777; }
+  .resident-row .rcount { font-size: .82rem; color: var(--teal-d); font-weight: 700; }
+
+  /* ── SPINNER ── */
+  .spinner { display: inline-block; width: 18px; height: 18px; border: 2.5px solid rgba(255,255,255,.4); border-top-color: #fff; border-radius: 50%; animation: spin .7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── MODAL ── */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 200; align-items: center; justify-content: center; }
+  .modal-overlay.open { display: flex; }
+  .modal-box { background: #fff; border-radius: 14px; padding: 1.75rem; max-width: 560px; width: 95%; box-shadow: 0 20px 60px rgba(0,0,0,.25); }
+  .modal-box h3 { margin-bottom: 1rem; color: var(--blue); }
+  .modal-actions { display: flex; justify-content: flex-end; gap: .75rem; margin-top: 1.25rem; }
+
+  /* ── MISC ── */
+  .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+  .section-header h2 { font-size: 1.15rem; color: var(--blue); }
+  .empty-state { text-align: center; padding: 2.5rem; color: #aaa; }
+  .empty-state .icon { font-size: 2.5rem; }
+  .role-badge { display: inline-block; padding: .15rem .5rem; border-radius: 6px; font-size: .72rem; font-weight: 700; text-transform: uppercase; }
+  .role-resident  { background: #D6EAF8; color: #1A5276; }
+  .role-preceptor { background: #FDEDEC; color: #922B21; }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  @media (max-width: 560px) { .two-col { grid-template-columns: 1fr; } }
+  .mt-1 { margin-top: 1rem; }
+  .mb-0 { margin-bottom: 0; }
+  a { color: var(--teal-d); }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════ AUTH PAGE -->
+<div id="page-auth" class="page active">
+  <div class="auth-wrap">
+    <div class="auth-box">
+      <div class="logo">
+        <div class="maple-flag">🍁</div>
+        <h1>Surgical Logbook</h1>
+        <p>Canadian Medical Residency Program</p>
+      </div>
+
+      <div class="auth-tabs">
+        <button class="active" onclick="switchAuthTab('login')">Sign In</button>
+        <button onclick="switchAuthTab('register')">Register</button>
+      </div>
+
+      <!-- LOGIN -->
+      <div id="tab-login">
+        <div class="alert alert-error" id="login-err"></div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="login-email" placeholder="you@hospital.ca" autocomplete="username">
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="login-pw" placeholder="••••••••" autocomplete="current-password">
+        </div>
+        <button class="btn btn-primary btn-block mt-1" id="login-btn" onclick="handleLogin()">
+          Sign In
+        </button>
+      </div>
+
+      <!-- REGISTER -->
+      <div id="tab-register" style="display:none">
+        <div class="alert alert-error" id="reg-err"></div>
+        <div class="alert alert-success" id="reg-ok"></div>
+        <div class="two-col">
+          <div class="form-group">
+            <label>Full Name</label>
+            <input type="text" id="reg-name" placeholder="Dr. Jane Smith">
+          </div>
+          <div class="form-group">
+            <label>Role</label>
+            <select id="reg-role">
+              <option value="resident">Resident / Fellow</option>
+              <option value="preceptor">Preceptor / Supervisor</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="reg-email" placeholder="you@hospital.ca">
+        </div>
+        <div class="two-col">
+          <div class="form-group">
+            <label>Password</label>
+            <input type="password" id="reg-pw" placeholder="Min. 8 characters">
+          </div>
+          <div class="form-group">
+            <label>Confirm Password</label>
+            <input type="password" id="reg-pw2" placeholder="Repeat password">
+          </div>
+        </div>
+        <div class="two-col">
+          <div class="form-group">
+            <label>Hospital / Institution</label>
+            <input type="text" id="reg-hospital" placeholder="Toronto General">
+          </div>
+          <div class="form-group">
+            <label>Program / Specialty</label>
+            <input type="text" id="reg-program" placeholder="General Surgery PGY-3">
+          </div>
+        </div>
+        <button class="btn btn-primary btn-block mt-1" id="reg-btn" onclick="handleRegister()">
+          Create Account
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ TOP NAV (hidden until logged in) -->
+<nav id="top-nav" style="display:none">
+  <div class="brand">
+    <span class="maple">🍁</span>
+    Surgical Logbook
+  </div>
+  <div class="nav-right">
+    <span class="user-info" id="nav-user-name"></span>
+    <button class="logout" onclick="handleLogout()">Sign Out</button>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════════════════════════════════ RESIDENT DASHBOARD -->
+<div id="page-resident" class="page">
+  <div class="container">
+    <div class="dashboard-layout">
+
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <ul class="sidebar-menu">
+          <li><a class="active" onclick="residentNav('overview')" id="rsn-overview"><span class="icon">📊</span> Overview</a></li>
+          <li><a onclick="residentNav('log')"      id="rsn-log">     <span class="icon">➕</span> Log Case</a></li>
+          <li><a onclick="residentNav('cases')"    id="rsn-cases">   <span class="icon">📋</span> My Cases</a></li>
+          <li><a onclick="residentNav('feedback')" id="rsn-feedback"><span class="icon">💬</span> Feedback</a></li>
+        </ul>
+      </aside>
+
+      <!-- Main content -->
+      <div>
+
+        <!-- OVERVIEW -->
+        <div id="rsec-overview">
+          <div class="stats-grid" id="r-stats-grid">
+            <div class="stat-card"><div class="num" id="st-total">–</div><div class="lbl">Total Cases</div></div>
+            <div class="stat-card teal"><div class="num" id="st-primary">–</div><div class="lbl">Primary Surgeon</div></div>
+            <div class="stat-card"><div class="num" id="st-assist">–</div><div class="lbl">First Assist</div></div>
+            <div class="stat-card red"><div class="num" id="st-obs">–</div><div class="lbl">Observer</div></div>
+          </div>
+
+          <div class="card">
+            <h2>Procedures by Volume</h2>
+            <div id="proc-bars"><div class="empty-state"><div class="icon">📊</div><p>Log cases to see statistics</p></div></div>
+          </div>
+        </div>
+
+        <!-- LOG CASE -->
+        <div id="rsec-log" style="display:none">
+          <div class="card">
+            <h2>➕ Log Surgical Case</h2>
+            <div class="alert alert-error"   id="case-err"></div>
+            <div class="alert alert-success" id="case-ok"></div>
+
+            <div class="two-col">
+              <div class="form-group">
+                <label>Date of Procedure</label>
+                <input type="date" id="case-date">
+              </div>
+              <div class="form-group">
+                <label>Hospital / Institution</label>
+                <input type="text" id="case-hospital" placeholder="Toronto Western">
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Preceptor / Attending</label>
+              <input type="text" id="case-preceptor" placeholder="Dr. Last Name">
+            </div>
+            <div class="form-group">
+              <label>Diagnosis / Indication</label>
+              <input type="text" id="case-diagnosis" placeholder="e.g. Acute appendicitis, Inguinal hernia…">
+            </div>
+
+            <div class="form-group">
+              <label>Procedures Performed</label>
+              <div class="proc-builder">
+                <div id="proc-list"></div>
+                <button class="btn btn-outline btn-sm" id="add-proc-btn" onclick="addProcRow()">+ Add Procedure</button>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Notes (optional)</label>
+              <textarea id="case-notes" placeholder="Complications, learning points, special techniques…"></textarea>
+            </div>
+
+            <button class="btn btn-primary" id="save-case-btn" onclick="handleSaveCase()">Save Case</button>
+          </div>
+        </div>
+
+        <!-- MY CASES -->
+        <div id="rsec-cases" style="display:none">
+          <div class="section-header">
+            <h2>My Cases</h2>
+            <span id="cases-count" style="font-size:.85rem;color:#777"></span>
+          </div>
+          <div id="cases-list"><div class="empty-state"><div class="icon">⏳</div><p>Loading…</p></div></div>
+        </div>
+
+        <!-- FEEDBACK -->
+        <div id="rsec-feedback" style="display:none">
+          <div class="section-header"><h2>Preceptor Feedback</h2></div>
+          <div id="feedback-list"><div class="empty-state"><div class="icon">⏳</div><p>Loading…</p></div></div>
+        </div>
+
+      </div><!-- /main -->
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ PRECEPTOR DASHBOARD -->
+<div id="page-preceptor" class="page">
+  <div class="container wide">
+    <div class="dashboard-layout">
+
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <ul class="sidebar-menu">
+          <li><a class="active" onclick="preceptorNav('residents')" id="psn-residents"><span class="icon">👥</span> Residents</a></li>
+          <li><a onclick="preceptorNav('review')"    id="psn-review">   <span class="icon">🔍</span> Review Case</a></li>
+          <li><a onclick="preceptorNav('feedback')"  id="psn-feedback">  <span class="icon">💬</span> Send Feedback</a></li>
+        </ul>
+      </aside>
+
+      <div>
+
+        <!-- RESIDENTS LIST -->
+        <div id="psec-residents">
+          <div class="section-header">
+            <h2>Registered Residents</h2>
+            <span id="p-res-count" style="font-size:.85rem;color:#777"></span>
+          </div>
+          <div class="card mb-0">
+            <div id="residents-list"><div class="empty-state"><div class="icon">⏳</div><p>Loading…</p></div></div>
+          </div>
+        </div>
+
+        <!-- RESIDENT DETAIL / REVIEW -->
+        <div id="psec-review" style="display:none">
+          <div class="section-header">
+            <h2 id="review-title">Resident Cases</h2>
+            <button class="btn btn-outline btn-sm" onclick="preceptorNav('residents')">← Back</button>
+          </div>
+
+          <div class="stats-grid" id="p-stats-grid">
+            <div class="stat-card"><div class="num" id="pst-total">–</div><div class="lbl">Total Cases</div></div>
+            <div class="stat-card teal"><div class="num" id="pst-primary">–</div><div class="lbl">Primary Surgeon</div></div>
+            <div class="stat-card"><div class="num" id="pst-assist">–</div><div class="lbl">First Assist</div></div>
+            <div class="stat-card red"><div class="num" id="pst-obs">–</div><div class="lbl">Observer</div></div>
+          </div>
+
+          <div class="card">
+            <h2>Procedures by Volume</h2>
+            <div id="p-proc-bars"></div>
+          </div>
+
+          <div class="card">
+            <h2>Case Log</h2>
+            <div id="p-cases-list"></div>
+          </div>
+        </div>
+
+        <!-- SEND FEEDBACK -->
+        <div id="psec-feedback" style="display:none">
+          <div class="card">
+            <h2>💬 Send Feedback to Resident</h2>
+            <div class="alert alert-error"   id="fb-err"></div>
+            <div class="alert alert-success" id="fb-ok"></div>
+            <div class="form-group">
+              <label>Select Resident</label>
+              <select id="fb-resident"></select>
+            </div>
+            <div class="form-group">
+              <label>Feedback Message</label>
+              <textarea id="fb-msg" placeholder="Observations, competency assessment, learning objectives…" style="min-height:140px"></textarea>
+            </div>
+            <button class="btn btn-primary" id="fb-btn" onclick="handleSendFeedback()">Send Feedback</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ CONFIRM MODAL -->
+<div class="modal-overlay" id="confirm-modal">
+  <div class="modal-box">
+    <h3>Confirm Delete</h3>
+    <p>Are you sure you want to delete this case? This cannot be undone.</p>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-danger"  id="confirm-del-btn">Delete</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+//  CONFIG
+// ═══════════════════════════════════════════════════════════
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz0W7zCneYszaNc4DvDAzqTtevri57hSZDWa3xWXVZH-Es3wgKjmw5DkKl9wSyIlTH0/exec';
+
+// ═══════════════════════════════════════════════════════════
+//  JSONP helper  (avoids CORS redirect issue)
+// ═══════════════════════════════════════════════════════════
+let _cbIndex = 0;
+function jsonp(params) {
+  return new Promise((resolve, reject) => {
+    const cbName = '__slcb_' + (++_cbIndex);
+    const timeout = setTimeout(() => {
+      cleanup();
+      reject(new Error('Request timed out'));
+    }, 15000);
+
+    window[cbName] = function(data) {
+      cleanup();
+      resolve(data);
+    };
+
+    function cleanup() {
+      clearTimeout(timeout);
+      delete window[cbName];
+      const el = document.getElementById(cbName);
+      if (el) el.remove();
+    }
+
+    params.callback = cbName;
+    const qs = Object.entries(params)
+      .map(([k,v]) => encodeURIComponent(k) + '=' + encodeURIComponent(v))
+      .join('&');
+
+    const script = document.createElement('script');
+    script.id = cbName;
+    script.src = APPS_SCRIPT_URL + '?' + qs;
+    script.onerror = () => { cleanup(); reject(new Error('Network error')); };
+    document.head.appendChild(script);
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+//  SHA-256 password hashing (client-side)
+// ═══════════════════════════════════════════════════════════
+async function sha256(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+// ═══════════════════════════════════════════════════════════
+//  State
+// ═══════════════════════════════════════════════════════════
+let currentUser = null;
+let selectedResidentEmail = '';
+let pendingDeleteId = '';
+
+function loadSession() {
+  const s = localStorage.getItem('slSession');
+  if (s) {
+    try { currentUser = JSON.parse(s); } catch(e) {}
+  }
+}
+function saveSession(u) { localStorage.setItem('slSession', JSON.stringify(u)); }
+function clearSession()  { localStorage.removeItem('slSession'); }
+
+// ═══════════════════════════════════════════════════════════
+//  Page routing
+// ═══════════════════════════════════════════════════════════
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function goToDashboard() {
+  document.getElementById('top-nav').style.display = 'flex';
+  document.getElementById('nav-user-name').textContent =
+    currentUser.name + ' · ' + (currentUser.role === 'resident' ? 'Resident/Fellow' : 'Preceptor');
+  if (currentUser.role === 'resident') {
+    showPage('page-resident');
+    residentNav('overview');
+    loadResidentStats();
+  } else {
+    showPage('page-preceptor');
+    preceptorNav('residents');
+    loadResidentList();
+    loadResidentSelectOptions();
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  Auth tab toggle
+// ═══════════════════════════════════════════════════════════
+function switchAuthTab(tab) {
+  document.getElementById('tab-login').style.display    = tab === 'login'    ? '' : 'none';
+  document.getElementById('tab-register').style.display = tab === 'register' ? '' : 'none';
+  document.querySelectorAll('.auth-tabs button').forEach((b,i) => {
+    b.classList.toggle('active', (i === 0) === (tab === 'login'));
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+//  Auth handlers
+// ═══════════════════════════════════════════════════════════
+async function handleLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const pw    = document.getElementById('login-pw').value;
+  const errEl = document.getElementById('login-err');
+  errEl.classList.remove('show');
+
+  if (!email || !pw) { showAlert(errEl, 'Please fill in all fields.'); return; }
+
+  const btn = document.getElementById('login-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Signing in…';
+
+  try {
+    const hash = await sha256(pw);
+    const res  = await jsonp({ action:'login', email, password_hash: hash });
+    if (res.success) {
+      currentUser = res.user;
+      saveSession(currentUser);
+      goToDashboard();
+    } else {
+      showAlert(errEl, res.error || 'Login failed.');
+    }
+  } catch(e) {
+    showAlert(errEl, 'Connection error: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = 'Sign In';
+  }
+}
+
+async function handleRegister() {
+  const name     = document.getElementById('reg-name').value.trim();
+  const email    = document.getElementById('reg-email').value.trim();
+  const role     = document.getElementById('reg-role').value;
+  const hospital = document.getElementById('reg-hospital').value.trim();
+  const program  = document.getElementById('reg-program').value.trim();
+  const pw       = document.getElementById('reg-pw').value;
+  const pw2      = document.getElementById('reg-pw2').value;
+  const errEl    = document.getElementById('reg-err');
+  const okEl     = document.getElementById('reg-ok');
+  errEl.classList.remove('show'); okEl.classList.remove('show');
+
+  if (!name || !email || !pw) { showAlert(errEl, 'Name, email and password are required.'); return; }
+  if (pw !== pw2)              { showAlert(errEl, 'Passwords do not match.'); return; }
+  if (pw.length < 8)           { showAlert(errEl, 'Password must be at least 8 characters.'); return; }
+
+  const btn = document.getElementById('reg-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Creating account…';
+
+  try {
+    const hash = await sha256(pw);
+    const res  = await jsonp({ action:'register', name, email, role, hospital, program, password_hash: hash });
+    if (res.success) {
+      showAlert(okEl, 'Account created! You can now sign in.');
+      switchAuthTab('login');
+      document.getElementById('login-email').value = email;
+    } else {
+      showAlert(errEl, res.error || 'Registration failed.');
+    }
+  } catch(e) {
+    showAlert(errEl, 'Connection error: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = 'Create Account';
+  }
+}
+
+function handleLogout() {
+  clearSession();
+  currentUser = null;
+  document.getElementById('top-nav').style.display = 'none';
+  document.getElementById('page-auth').classList.add('active');
+  showPage('page-auth');
+}
+
+// ═══════════════════════════════════════════════════════════
+//  Resident navigation
+// ═══════════════════════════════════════════════════════════
+const rSecs = ['overview','log','cases','feedback'];
+function residentNav(sec) {
+  rSecs.forEach(s => {
+    document.getElementById('rsec-'+s).style.display = s === sec ? '' : 'none';
+    document.getElementById('rsn-'+s).classList.toggle('active', s === sec);
+  });
+  if (sec === 'cases')    loadMyCases();
+  if (sec === 'feedback') loadMyFeedback();
+  if (sec === 'overview') loadResidentStats();
+  if (sec === 'log')      initCaseForm();
+}
+
+// ═══════════════════════════════════════════════════════════
+//  Procedure row builder
+// ═══════════════════════════════════════════════════════════
+function initCaseForm() {
+  document.getElementById('proc-list').innerHTML = '';
+  // Pre-set date to today
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  const mm   = String(today.getMonth()+1).padStart(2,'0');
+  const dd   = String(today.getDate()).padStart(2,'0');
+  document.getElementById('case-date').value = `${yyyy}-${mm}-${dd}`;
+  if (currentUser) document.getElementById('case-hospital').value = currentUser.hospital || '';
+  addProcRow();
+}
+
+function addProcRow() {
+  const div = document.createElement('div');
+  div.className = 'proc-row';
+  div.innerHTML = `
+    <input type="text" placeholder="Procedure name (e.g. Laparoscopic appendectomy)" class="proc-name">
+    <select class="proc-role">
+      <option value="Primary Surgeon">Primary Surgeon</option>
+      <option value="Assistant">First Assist</option>
+      <option value="Observer">Observer</option>
+    </select>
+    <button class="remove-proc" onclick="this.parentElement.remove()" title="Remove">✕</button>`;
+  document.getElementById('proc-list').appendChild(div);
+}
+
+function getProcedures() {
+  return Array.from(document.querySelectorAll('.proc-row')).map(row => ({
+    name: row.querySelector('.proc-name').value.trim(),
+    role: row.querySelector('.proc-role').value
+  })).filter(p => p.name);
+}
+
+// ═══════════════════════════════════════════════════════════
+//  Save case
+// ═══════════════════════════════════════════════════════════
+async function handleSaveCase() {
+  const errEl = document.getElementById('case-err');
+  const okEl  = document.getElementById('case-ok');
+  errEl.classList.remove('show'); okEl.classList.remove('show');
+
+  const date       = document.getElementById('case-date').value;
+  const hospital   = document.getElementById('case-hospital').value.trim();
+  const preceptor  = document.getElementById('case-preceptor').value.trim();
+  const diagnosis  = document.getElementById('case-diagnosis').value.trim();
+  const notes      = document.getElementById('case-notes').value.trim();
+  const procedures = getProcedures();
+
+  if (!date || !preceptor || !diagnosis) { showAlert(errEl, 'Date, preceptor and diagnosis are required.'); return; }
+  if (!procedures.length) { showAlert(errEl, 'Add at least one procedure.'); return; }
+
+  const btn = document.getElementById('save-case-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Saving…';
+
+  try {
+    const res = await jsonp({
+      action: 'addCase',
+      resident_email: currentUser.email,
+      date, hospital, preceptor_name: preceptor, diagnosis, notes,
+      procedures: JSON.stringify(procedures)
+    });
+    if (res.success) {
+      showAlert(okEl, 'Case saved successfully!');
+      document.getElementById('case-preceptor').value = '';
+      document.getElementById('case-diagnosis').value = '';
+      document.getElementById('case-notes').value     = '';
+      document.getElementById('proc-list').innerHTML  = '';
+      addProcRow();
+    } else {
+      showAlert(errEl, res.error || 'Failed to save case.');
+    }
+  } catch(e) {
+    showAlert(errEl, 'Connection error: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = 'Save Case';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  Load resident's own cases
+// ═══════════════════════════════════════════════════════════
+async function loadMyCases() {
+  const el = document.getElementById('cases-list');
+  el.innerHTML = '<div class="empty-state"><div class="icon">⏳</div><p>Loading…</p></div>';
+  try {
+    const res = await jsonp({ action:'getCases', resident_email: currentUser.email });
+    if (res.success) {
+      document.getElementById('cases-count').textContent = res.cases.length + ' case(s)';
+      el.innerHTML = res.cases.length ? '' : '<div class="empty-state"><div class="icon">📋</div><p>No cases logged yet</p></div>';
+      res.cases.forEach(c => el.appendChild(buildCaseCard(c, true)));
+    }
+  } catch(e) { el.innerHTML = '<div class="empty-state"><p>Error loading cases: '+e.message+'</p></div>'; }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  Load resident stats
+// ═══════════════════════════════════════════════════════════
+async function loadResidentStats() {
+  try {
+    const res = await jsonp({ action:'getStats', resident_email: currentUser.email });
+    if (res.success) renderStats(res.stats, 'st-', 'proc-bars');
+  } catch(e) {}
+}
+
+// ═══════════════════════════════════════════════════════════
+//  Load feedback
+// ═══════════════════════════════════════════════════════════
+async function loadMyFeedback() {
+  const el = document.getElementById('feedback-list');
+  el.innerHTML = '<div class="empty-state"><div class="icon">⏳</div><p>Loading…</p></div>';
+  try {
+    const res = await jsonp({ action:'getFeedback', resident_email: currentUser.email });
+    if (res.success) {
+      if (!res.feedback.length) {
+        el.innerHTML = '<div class="empty-state"><div class="icon">💬</div><p>No feedback received yet</p></div>';
+        return;
+      }
+      el.innerHTML = '';
+      res.feedback.forEach(f => {
+        const d = document.createElement('div');
+        d.className = 'fb-card';
+        d.innerHTML = `
+          <div class="fb-from">From <strong>${esc(f.preceptor_name||f.preceptor_email)}</strong> · ${fmtDate(f.date)}</div>
+          <div class="fb-msg">${esc(f.message)}</div>`;
+        el.appendChild(d);
+      });
+    }
+  } catch(e) { el.innerHTML = '<div class="empty-state"><p>Error: '+e.message+'</p></div>'; }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  Case card renderer
+// ═══════════════════════════════════════════════════════════
+function buildCaseCard(c, allowDelete) {
+  let procs = [];
+  try { procs = JSON.parse(c.procedures); } catch(e) {}
+  const div = document.createElement('div');
+  div.className = 'case-card';
+  const badgesHtml = procs.map(p => {
+    const cls = p.role === 'Primary Surgeon' ? 'badge-primary' : p.role === 'Assistant' ? 'badge-assistant' : 'badge-observer';
+    return `<span class="badge ${cls}">${esc(p.name)} · ${esc(p.role)}</span>`;
+  }).join('');
+
+  div.innerHTML = `
+    <div class="case-header">
+      <div>
+        <div class="case-title">${esc(c.diagnosis)}</div>
+        <div class="case-meta">📅 ${fmtDate(c.date)} · 🏥 ${esc(c.hospital||'–')} · 👨‍⚕️ Dr. ${esc(c.preceptor_name)}</div>
+      </div>
+      ${allowDelete ? `<button class="btn btn-danger btn-sm" onclick="confirmDelete('${esc(c.id)}')">Delete</button>` : ''}
+    </div>
+    <div class="procs">${badgesHtml}</div>
+    ${c.notes ? `<div class="notes-text">${esc(c.notes)}</div>` : ''}`;
+  return div;
+}
+
+// ═══════════════════════════════════════════════════════════
+//  Delete case
+// ═══════════════════════════════════════════════════════════
+function confirmDelete(id) {
+  pendingDeleteId = id;
+  document.getElementById('confirm-modal').classList.add('open');
+}
+function closeModal() {
+  document.getElementById('confirm-modal').classList.remove('open');
+  pendingDeleteId = '';
+}
+document.getElementById('confirm-del-btn').addEventListener('click', async () => {
+  if (!pendingDeleteId) return;
+  try {
+    await jsonp({ action:'deleteCase', id: pendingDeleteId, resident_email: currentUser.email });
+  } catch(e) {}
+  closeModal();
+  loadMyCases();
+});
+
+// ═══════════════════════════════════════════════════════════
+//  Preceptor navigation
+// ═══════════════════════════════════════════════════════════
+const pSecs = ['residents','review','feedback'];
+function preceptorNav(sec) {
+  pSecs.forEach(s => {
+    document.getElementById('psec-'+s).style.display = s === sec ? '' : 'none';
+    document.getElementById('psn-'+s).classList.toggle('active', s === sec);
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+//  Load residents list (preceptor)
+// ═══════════════════════════════════════════════════════════
+async function loadResidentList() {
+  const el = document.getElementById('residents-list');
+  el.innerHTML = '<div class="empty-state"><div class="icon">⏳</div><p>Loading…</p></div>';
+  try {
+    const res = await jsonp({ action:'getAllResidents' });
+    if (res.success) {
+      document.getElementById('p-res-count').textContent = res.residents.length + ' resident(s)';
+      if (!res.residents.length) {
+        el.innerHTML = '<div class="empty-state"><div class="icon">👥</div><p>No residents registered yet</p></div>';
+        return;
+      }
+      el.innerHTML = '';
+
+      // Load case counts for each resident concurrently
+      const counts = await Promise.all(
+        res.residents.map(r => jsonp({ action:'getCases', resident_email: r.email })
+          .then(d => d.success ? d.cases.length : 0).catch(() => 0))
+      );
+
+      res.residents.forEach((r, i) => {
+        const row = document.createElement('div');
+        row.className = 'resident-row';
+        row.innerHTML = `
+          <div>
+            <div class="rname">${esc(r.name)}</div>
+            <div class="rmeta">🏥 ${esc(r.hospital||'–')} · ${esc(r.program||'–')}</div>
+          </div>
+          <div class="rcount">${counts[i]} cases</div>`;
+        row.onclick = () => openResidentReview(r);
+        el.appendChild(row);
+      });
+    }
+  } catch(e) { el.innerHTML = '<div class="empty-state"><p>Error: '+e.message+'</p></div>'; }
+}
+
+async function openResidentReview(r) {
+  selectedResidentEmail = r.email;
+  document.getElementById('review-title').textContent = r.name + ' — Case Log';
+  preceptorNav('review');
+
+  // Load stats and cases in parallel
+  const [statsRes, casesRes] = await Promise.all([
+    jsonp({ action:'getStats', resident_email: r.email }),
+    jsonp({ action:'getResidentCases', resident_email: r.email })
+  ]);
+
+  if (statsRes.success) renderStats(statsRes.stats, 'pst-', 'p-proc-bars');
+
+  const cEl = document.getElementById('p-cases-list');
+  cEl.innerHTML = '';
+  if (casesRes.success && casesRes.cases.length) {
+    casesRes.cases.forEach(c => cEl.appendChild(buildCaseCard(c, false)));
+  } else {
+    cEl.innerHTML = '<div class="empty-state"><div class="icon">📋</div><p>No cases logged yet</p></div>';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  Stats renderer (shared)
+// ═══════════════════════════════════════════════════════════
+function renderStats(stats, prefix, barsId) {
+  document.getElementById(prefix+'total').textContent   = stats.total;
+  document.getElementById(prefix+'primary').textContent = stats.roleCount.primary;
+  document.getElementById(prefix+'assist').textContent  = stats.roleCount.assistant;
+  document.getElementById(prefix+'obs').textContent     = stats.roleCount.observer;
+
+  const barsEl = document.getElementById(barsId);
+  const procs  = Object.entries(stats.procCount).sort((a,b) => b[1]-a[1]);
+  if (!procs.length) {
+    barsEl.innerHTML = '<div class="empty-state"><div class="icon">📊</div><p>Log cases to see statistics</p></div>';
+    return;
+  }
+  const max = procs[0][1];
+  barsEl.innerHTML = procs.slice(0,15).map(([name, count]) => `
+    <div class="proc-bar">
+      <div class="label-row"><span>${esc(name)}</span><span><strong>${count}</strong></span></div>
+      <div class="bar-track"><div class="bar-fill" style="width:${Math.round(count/max*100)}%"></div></div>
+    </div>`).join('');
+}
+
+// ═══════════════════════════════════════════════════════════
+//  Send feedback (preceptor)
+// ═══════════════════════════════════════════════════════════
+async function loadResidentSelectOptions() {
+  try {
+    const res = await jsonp({ action:'getAllResidents' });
+    const sel = document.getElementById('fb-resident');
+    sel.innerHTML = '<option value="">— Select resident —</option>';
+    if (res.success) {
+      res.residents.forEach(r => {
+        const o = document.createElement('option');
+        o.value = r.email;
+        o.textContent = r.name + (r.program ? ' (' + r.program + ')' : '');
+        sel.appendChild(o);
+      });
+    }
+    // Pre-select if we opened from a resident review
+    if (selectedResidentEmail) sel.value = selectedResidentEmail;
+  } catch(e) {}
+}
+
+async function handleSendFeedback() {
+  const errEl = document.getElementById('fb-err');
+  const okEl  = document.getElementById('fb-ok');
+  errEl.classList.remove('show'); okEl.classList.remove('show');
+
+  const resident_email = document.getElementById('fb-resident').value;
+  const message        = document.getElementById('fb-msg').value.trim();
+
+  if (!resident_email) { showAlert(errEl, 'Please select a resident.'); return; }
+  if (!message)        { showAlert(errEl, 'Please write a feedback message.'); return; }
+
+  const btn = document.getElementById('fb-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Sending…';
+
+  try {
+    const res = await jsonp({
+      action: 'addFeedback',
+      preceptor_email: currentUser.email,
+      preceptor_name:  currentUser.name,
+      resident_email, message
+    });
+    if (res.success) {
+      showAlert(okEl, 'Feedback sent successfully.');
+      document.getElementById('fb-msg').value = '';
+      document.getElementById('fb-resident').value = '';
+    } else {
+      showAlert(errEl, res.error || 'Failed to send.');
+    }
+  } catch(e) {
+    showAlert(errEl, 'Connection error: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = 'Send Feedback';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  Utilities
+// ═══════════════════════════════════════════════════════════
+function showAlert(el, msg) {
+  el.textContent = msg;
+  el.classList.add('show');
+}
+
+function esc(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function fmtDate(str) {
+  if (!str) return '–';
+  const d = new Date(str);
+  if (isNaN(d)) return str;
+  return d.toLocaleDateString('en-CA', { year:'numeric', month:'short', day:'numeric' });
+}
+
+// Enter key submits login
+document.getElementById('login-pw').addEventListener('keydown', e => {
+  if (e.key === 'Enter') handleLogin();
+});
+
+// ═══════════════════════════════════════════════════════════
+//  Bootstrap
+// ═══════════════════════════════════════════════════════════
+loadSession();
+if (currentUser) goToDashboard();
+</script>
+</body>
+</html>
