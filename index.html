@@ -290,6 +290,7 @@ index.html
             <label>Role</label>
             <select id="reg-role">
               <option value="resident">Resident / Fellow</option>
+              <option value="surgeon">Surgeon</option>
               <option value="preceptor">Preceptor / Supervisor</option>
             </select>
           </div>
@@ -604,9 +605,10 @@ function showPage(id) {
 
 function goToDashboard() {
   document.getElementById('top-nav').style.display = 'flex';
+  const roleLabel = {resident:'Resident/Fellow', surgeon:'Surgeon', preceptor:'Preceptor/Supervisor'};
   document.getElementById('nav-user-name').textContent =
-    currentUser.name + ' · ' + (currentUser.role === 'resident' ? 'Resident/Fellow' : 'Preceptor');
-  if (currentUser.role === 'resident') {
+    currentUser.name + ' · ' + (roleLabel[currentUser.role] || currentUser.role);
+  if (currentUser.role === 'resident' || currentUser.role === 'surgeon') {
     showPage('page-resident');
     residentNav('overview');
     loadResidentStats();
