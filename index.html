@@ -316,7 +316,80 @@ index.html
           </div>
           <div class="form-group">
             <label>Program / Specialty</label>
-            <input type="text" id="reg-program" placeholder="General Surgery PGY-3">
+            <select id="reg-program" onchange="onSpecialtySelect()">
+              <option value="">— Select specialty —</option>
+              <optgroup label="Surgical Specialties">
+                <option>Cardiac Surgery</option>
+                <option>Colon and Rectal Surgery</option>
+                <option>General Surgery</option>
+                <option>Hand Surgery</option>
+                <option>Neurological Surgery</option>
+                <option>Obstetrics and Gynecology</option>
+                <option>Ophthalmology</option>
+                <option>Oral and Maxillofacial Surgery</option>
+                <option>Orthopaedic Surgery</option>
+                <option>Otolaryngology – Head and Neck Surgery</option>
+                <option>Pediatric Surgery</option>
+                <option>Plastic Surgery</option>
+                <option>Surgical Oncology</option>
+                <option>Thoracic Surgery</option>
+                <option>Transplant Surgery</option>
+                <option>Trauma Surgery / Acute Care Surgery</option>
+                <option>Urology</option>
+                <option>Vascular Surgery</option>
+              </optgroup>
+              <optgroup label="Surgical Fellowships">
+                <option>Fellowship – Bariatric Surgery</option>
+                <option>Fellowship – Breast Surgery</option>
+                <option>Fellowship – Colorectal Surgery</option>
+                <option>Fellowship – Endocrine Surgery</option>
+                <option>Fellowship – Gynecologic Oncology</option>
+                <option>Fellowship – Hepatobiliary Surgery</option>
+                <option>Fellowship – Minimally Invasive Surgery</option>
+                <option>Fellowship – Pediatric Surgery</option>
+                <option>Fellowship – Robotic Surgery</option>
+                <option>Fellowship – Surgical Critical Care</option>
+                <option>Fellowship – Surgical Oncology</option>
+                <option>Fellowship – Transplant Surgery</option>
+                <option>Fellowship – Trauma and Acute Care Surgery</option>
+                <option>Fellowship – Vascular Surgery</option>
+              </optgroup>
+              <optgroup label="Medical Specialties">
+                <option>Allergy and Immunology</option>
+                <option>Anesthesiology</option>
+                <option>Dermatology</option>
+                <option>Emergency Medicine</option>
+                <option>Endocrinology</option>
+                <option>Family Medicine</option>
+                <option>Gastroenterology</option>
+                <option>Geriatric Medicine</option>
+                <option>Hematology and Oncology</option>
+                <option>Infectious Disease</option>
+                <option>Internal Medicine</option>
+                <option>Interventional Radiology</option>
+                <option>Medical Genetics and Genomics</option>
+                <option>Nephrology</option>
+                <option>Neurology</option>
+                <option>Nuclear Medicine</option>
+                <option>Pathology</option>
+                <option>Pediatrics</option>
+                <option>Physical Medicine and Rehabilitation</option>
+                <option>Preventive Medicine</option>
+                <option>Psychiatry</option>
+                <option>Pulmonology and Critical Care</option>
+                <option>Radiation Oncology</option>
+                <option>Radiology – Diagnostic</option>
+                <option>Rheumatology</option>
+                <option>Sports Medicine</option>
+              </optgroup>
+              <option value="__other__">Other…</option>
+            </select>
+            <input type="text" id="reg-program-other" placeholder="Type your specialty…" maxlength="50"
+              style="display:none; margin-top:.5rem;"
+              oninput="document.getElementById('specialty-char-count').textContent=this.value.length">
+            <div id="reg-program-other-hint" style="display:none; font-size:.75rem; color:#999; margin-top:.25rem; text-align:right;">
+              <span id="specialty-char-count">0</span>/50
+            </div>
           </div>
         </div>
         <button class="btn btn-primary btn-block mt-1" id="reg-btn" onclick="handleRegister()">
@@ -654,6 +727,16 @@ function goToDashboard() {
 // ═══════════════════════════════════════════════════════════
 //  Auth tab toggle
 // ═══════════════════════════════════════════════════════════
+function onSpecialtySelect() {
+  const sel   = document.getElementById('reg-program');
+  const other = document.getElementById('reg-program-other');
+  const hint  = document.getElementById('reg-program-other-hint');
+  const isOther = sel.value === '__other__';
+  other.style.display = isOther ? '' : 'none';
+  hint.style.display  = isOther ? '' : 'none';
+  if (isOther) other.focus();
+}
+
 function switchAuthTab(tab) {
   document.getElementById('tab-login').style.display    = tab === 'login'    ? '' : 'none';
   document.getElementById('tab-register').style.display = tab === 'register' ? '' : 'none';
@@ -699,8 +782,11 @@ async function handleRegister() {
   const name     = document.getElementById('reg-name').value.trim();
   const email    = document.getElementById('reg-email').value.trim();
   const role     = document.getElementById('reg-role').value;
-  const hospital = document.getElementById('reg-hospital').value.trim();
-  const program  = document.getElementById('reg-program').value.trim();
+  const hospital   = document.getElementById('reg-hospital').value.trim();
+  const progSel    = document.getElementById('reg-program').value;
+  const program    = progSel === '__other__'
+    ? document.getElementById('reg-program-other').value.trim()
+    : progSel;
   const pw       = document.getElementById('reg-pw').value;
   const pw2      = document.getElementById('reg-pw2').value;
   const errEl    = document.getElementById('reg-err');
