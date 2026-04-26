@@ -5,8 +5,8 @@ index.html
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Surgical Logbook — Canadian Medical Residency</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏥</text></svg>">
+<title>SurgLogbook — Global Surgical Case Documentation</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🩺</text></svg>">
 <style>
   :root {
     --red:    #C0392B;
@@ -34,7 +34,7 @@ index.html
     box-shadow: 0 2px 8px rgba(0,0,0,.3);
   }
   nav .brand { display: flex; align-items: center; gap: .6rem; font-size: 1.2rem; font-weight: 700; }
-  nav .brand span.maple { color: var(--red); font-size: 1.4rem; }
+  nav .brand svg { width: 22px; height: 22px; }
   nav .user-info { font-size: .85rem; opacity: .85; }
   nav button.logout {
     background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.25);
@@ -68,7 +68,8 @@ index.html
     padding: 2.5rem; width: 100%; max-width: 420px;
   }
   .auth-box .logo { text-align: center; margin-bottom: 1.5rem; }
-  .auth-box .logo .maple-flag { font-size: 3rem; }
+  .auth-box .logo .scalpel-icon { margin-bottom: .3rem; }
+  .auth-box .logo .scalpel-icon svg { width: 72px; height: 72px; }
   .auth-box .logo h1 { font-size: 1.4rem; color: var(--blue); font-weight: 700; }
   .auth-box .logo p { font-size: .82rem; color: #777; }
 
@@ -237,9 +238,22 @@ index.html
   <div class="auth-wrap">
     <div class="auth-box">
       <div class="logo">
-        <div class="maple-flag">🍁</div>
-        <h1>Surgical Logbook</h1>
-        <p>Canadian Medical Residency Program</p>
+        <div class="scalpel-icon">
+          <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <!-- Handle -->
+            <rect x="5" y="44" width="52" height="12" rx="6" fill="#2C3E50"/>
+            <!-- Guard -->
+            <rect x="54" y="38" width="8" height="24" rx="3" fill="#34495E"/>
+            <!-- Blade body -->
+            <path d="M62 44 L92 48 L92 52 L62 56 Z" fill="#1ABC9C"/>
+            <!-- Blade tip -->
+            <path d="M88 48 L98 50 L88 52 Z" fill="#16A085"/>
+            <!-- Shine on handle -->
+            <rect x="10" y="47" width="30" height="3" rx="2" fill="rgba(255,255,255,0.15)"/>
+          </svg>
+        </div>
+        <h1>SurgLogbook</h1>
+        <p>Surgical Case Documentation for Medical Professionals Worldwide</p>
       </div>
 
       <div class="auth-tabs">
@@ -316,8 +330,13 @@ index.html
 <!-- ═══════════════════════════════════════════════════════ TOP NAV (hidden until logged in) -->
 <nav id="top-nav" style="display:none">
   <div class="brand">
-    <span class="maple">🍁</span>
-    Surgical Logbook
+    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <rect x="5" y="44" width="52" height="12" rx="6" fill="#fff"/>
+      <rect x="54" y="38" width="8" height="24" rx="3" fill="rgba(255,255,255,0.7)"/>
+      <path d="M62 44 L92 48 L92 52 L62 56 Z" fill="#1ABC9C"/>
+      <path d="M88 48 L98 50 L88 52 Z" fill="#16A085"/>
+    </svg>
+    SurgLogbook
   </div>
   <div class="nav-right">
     <span class="user-info" id="nav-user-name"></span>
